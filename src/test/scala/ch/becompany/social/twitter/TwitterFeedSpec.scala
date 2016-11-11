@@ -15,13 +15,7 @@ class TwitterFeedSpec extends FlatSpec {
 
   "Twitter feed" should "stream tweets" in {
 
-    val config = TwitterAuthConfig(
-      "NtL57wkyRte8rPkfW5tMVzyky",
-      "ENGwax46DgkDWjgpGtIVMtAzNNZscnn1DEtTYoj4W26QFpRJZF",
-      "",
-      "")
-
-    val feed = new TwitterFeed(config, Some("BeCompany_CH"))
+    val feed = new TwitterFeed(Some("BeCompany_CH"))
 
     feed.stream(5).
       runWith(TestSink.probe[Try[Status]]).

@@ -3,23 +3,20 @@ package ch.becompany.social.twitter
 import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
+import com.typesafe.config.ConfigFactory
 import twitter4j.conf.ConfigurationBuilder
 
 import scala.util.Try
 
-case class TwitterAuthConfig(
-  consumerKey: String,
-  consumerSecret: String,
-  accessToken: String,
-  accessTokenSecret: String)
+class TwitterFeed(user: Option[String]) extends SocialFeed {
 
-class TwitterFeed(auth: TwitterAuthConfig, user: Option[String]) extends SocialFeed {
+  private lazy val conf = ConfigFactory.load.getConfig("scalaSocialFeed.twitter")
 
   private lazy val config = new ConfigurationBuilder().
-    setOAuthConsumerKey(auth.consumerKey).
-    setOAuthConsumerSecret(auth.consumerSecret).
-    setOAuthAccessToken(auth.accessToken).
-    setOAuthAccessTokenSecret(auth.accessTokenSecret).
+    setOAuthConsumerKey(conf.getString("consumerKey")).
+    setOAuthConsumerSecret(conf.getString("consumerSecret")).
+    setOAuthAccessToken(conf.getString("accessToken")).
+    setOAuthAccessTokenSecret(conf.getString("accessTokenSecret")).
     build
 
   def stream(num: Int): Source[Try[Status], _] = {
