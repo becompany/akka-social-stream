@@ -19,7 +19,7 @@ class TwitterFeed(user: Option[String]) extends SocialFeed {
     setOAuthAccessTokenSecret(conf.getString("accessTokenSecret")).
     build
 
-  def stream(num: Int): Source[Try[Status], _] = {
+  def source(num: Int): Source[Try[Status], _] = {
 
     val async = new TwitterAsync(config, user)
     val stream = new TwitterStream(config, user)

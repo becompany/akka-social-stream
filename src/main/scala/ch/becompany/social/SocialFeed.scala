@@ -4,8 +4,11 @@ import akka.stream.scaladsl.Source
 
 import scala.util.Try
 
+/**
+  * Social feed.
+  */
 trait SocialFeed {
 
-  def stream(numLast: Int): Source[Try[Status], _]
+  def source(numLast: Int): Source[Try[Status], _]
 
 }

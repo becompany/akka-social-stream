@@ -17,7 +17,7 @@ class TwitterFeedSpec extends FlatSpec {
 
     val feed = new TwitterFeed(Some("BeCompany_CH"))
 
-    feed.stream(5).
+    feed.source(5).
       runWith(TestSink.probe[Try[Status]]).
       request(20).
       expectNextChainingPF {

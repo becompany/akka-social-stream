@@ -6,9 +6,9 @@ import akka.stream.scaladsl.{GraphDSL, Merge, Source}
 
 import scala.util.Try
 
-class Feed(feeds: SocialFeed*) {
+class Feed[Tag](feeds: Map[Tag, SocialFeed]) {
 
-  def stream(numLast: Int): Source[Try[Status], NotUsed] = {
+  def source(numLast: Int): Source[(Tag, Try[Status]), NotUsed] = {
 /*
     val feeds = (feed1 :: feed2 :: rest.toList).toVector
 
@@ -28,9 +28,9 @@ class Feed(feeds: SocialFeed*) {
     Source.fromGraph(GraphDSL.create() { implicit builder =>
       import GraphDSL.Implicits._
 
-      val merge = builder.add(Merge[Try[Status]](feeds.size))
+      val merge = builder.add(Merge[(Tag, Try[Status])](feeds.size))
       feeds.
-        map(_.stream(numLast)).
+        map { case (tag, feed) => feed.source(numLast).map((tag, _)) }.
         zipWithIndex.
         foreach { case (src, i) => src ~> merge.in(i) }
 
