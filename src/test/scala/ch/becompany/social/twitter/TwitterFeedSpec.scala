@@ -21,7 +21,7 @@ class TwitterFeedSpec extends FlatSpec {
       runWith(TestSink.probe[Try[Status]]).
       request(20).
       expectNextChainingPF {
-        case Success(Status("BeCompany GmbH", _, _)) =>
+        case Success(Status("BeCompany GmbH", _, _, _)) =>
       }
 
   }
