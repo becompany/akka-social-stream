@@ -10,7 +10,7 @@ libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0"
 
 ## Usage
 
-~~~
+~~~ scala
 val feed = new Feed(Map(
     "twitter" -> new TwitterFeed(Some("my_screen_name"))
   ))
