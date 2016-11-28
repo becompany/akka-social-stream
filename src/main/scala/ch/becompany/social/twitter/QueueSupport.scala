@@ -1,7 +1,7 @@
 package ch.becompany.social.twitter
 
 import akka.stream.scaladsl.SourceQueueWithComplete
-import ch.becompany.social.Status
+import ch.becompany.social.{Status, User}
 
 import scala.util.{Failure, Success, Try}
 
@@ -16,7 +16,10 @@ trait QueueSupport {
 
   def status(status: twitter4j.Status): Unit =
     queue.offer(Success(Status(
-      status.getUser.getName,
+      User(
+        status.getUser.getScreenName,
+        status.getUser.getName
+      ),
       status.getCreatedAt.toInstant,
       status.getText,
       status.getLink)))

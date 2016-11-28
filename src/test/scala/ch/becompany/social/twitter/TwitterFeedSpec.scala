@@ -3,7 +3,7 @@ package ch.becompany.social.twitter
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.testkit.scaladsl.TestSink
-import ch.becompany.social.Status
+import ch.becompany.social.{Status, User}
 import org.scalatest.FlatSpec
 
 import scala.util.{Success, Try}
@@ -21,7 +21,7 @@ class TwitterFeedSpec extends FlatSpec {
       runWith(TestSink.probe[Try[Status]]).
       request(20).
       expectNextChainingPF {
-        case Success(Status("BeCompany GmbH", _, _, _)) =>
+        case Success(Status(User(_, "BeCompany GmbH"), _, _, _)) =>
       }
 
   }
