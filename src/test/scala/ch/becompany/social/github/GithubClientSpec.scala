@@ -15,7 +15,7 @@ class GithubClientSpec extends FlatSpec {
   "A github client" should "receive org repos" in {
     val f = repositories("becompany")
     f foreach println
-    Await.result(f, 10 seconds)
+    assert(Await.result(f, 10 seconds).size == 30)
   }
 /*
   it should "receive commits" in {
@@ -32,7 +32,7 @@ class GithubClientSpec extends FlatSpec {
   it should "receive events" in {
     val f = events("becompany")
     f foreach println
-    Await.result(f, 10 seconds)
+    assert(Await.result(f, 10 seconds).size == 30)
   }
 
 }
