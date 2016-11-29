@@ -1,17 +1,18 @@
 package ch.becompany.http
 
-import java.io.{File, IOException}
+import java.io.IOException
 import java.nio.file.{Files, Path, Paths}
+import java.util.concurrent.TimeUnit
 
 import akka.actor.ActorSystem
-import akka.{Done, stream}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
-import akka.stream.ActorMaterializer
+import akka.stream.{ActorMaterializer, IOResult}
 import akka.stream.scaladsl._
 
+import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Failure
 
@@ -48,7 +49,7 @@ trait HttpClient {
     case None => Nil
   }
 
-  private def addToCacheAndRead(uri: String, httpResponse: HttpResponse): ResponseEntity = {
+  private def addToCacheAndRead(uri: String, httpResponse: HttpResponse): ResponseEntity = synchronized {
     httpResponse.headers.find(header => header.is("etag")) match {
       case Some(header) => {
         val etag = header.value().substring(1, header.value().length - 1)
@@ -56,7 +57,8 @@ trait HttpClient {
           case Some(cachedEtag) => cachedEtag != etag
           case None => true
         }) {
-          httpResponse.entity.getDataBytes().to(FileIO.toPath(getTempFilePath(etag)))
+          val complete = httpResponse.entity.dataBytes.runWith(FileIO.toPath(getTempFilePath(etag)))
+          Await.result(complete, Duration.create(2, TimeUnit.SECONDS))
           etagCache.put(uri, etag)
         }
       }
@@ -69,7 +71,6 @@ trait HttpClient {
   }
 
   private def readFromCache(uri: String): ResponseEntity = {
-    ResponseEntity
     etagCache.get(uri) match {
       case Some(etag) => HttpResponse(OK, entity = HttpEntity.fromPath(ContentType(MediaTypes.`application/json`), getTempFilePath(etag))).entity
       case None => HttpResponse(InternalServerError, entity = "").entity
