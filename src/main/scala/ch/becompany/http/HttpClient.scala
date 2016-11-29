@@ -6,13 +6,13 @@ import java.nio.file.{Files, Path, Paths}
 import akka.actor.ActorSystem
 import akka.{Done, stream}
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.{HttpHeader, HttpRequest, HttpResponse, ResponseEntity}
+import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.{FileIO, Sink}
+import akka.stream.scaladsl._
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.Failure
 
 trait HttpClient {
@@ -23,8 +23,8 @@ trait HttpClient {
   val etagCache = new scala.collection.concurrent.TrieMap[String, String]()
   val cacheDirectory = Files.createTempDirectory("github-cache")
 
-  def req[A](uri: String, headers: scala.collection.immutable.Seq[HttpHeader])(implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
-    Http().singleRequest(HttpRequest(uri = uri)).
+  def req[A](uri: String)(implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
+    Http().singleRequest(HttpRequest(uri = uri, headers = getHeaders(uri))).
       flatMap { response =>
         response.status match {
           case OK => Unmarshal(addToCacheAndRead(uri, response)).to[A]
@@ -40,24 +40,39 @@ trait HttpClient {
     }
   }
 
+  private def getHeaders(uri: String) : scala.collection.immutable.Seq[HttpHeader] = etagCache.get(uri) match {
+    case Some(etag) => scala.collection.immutable.Seq(HttpHeader.parse("If-None-Match", etag) match {
+      case HttpHeader.ParsingResult.Ok(header, errors) => header
+      case HttpHeader.ParsingResult.Error(_) => throw new IllegalStateException("Unable to create http header.")
+    })
+    case None => Nil
+  }
+
   private def addToCacheAndRead(uri: String, httpResponse: HttpResponse): ResponseEntity = {
     httpResponse.headers.find(header => header.is("etag")) match {
       case Some(header) => {
-        etagCache.put(uri, header.value())
-
-        httpResponse.entity.dataBytes.map(_).toMat(FileIO.toPath(getTempFilePath(header.value())))
+        val etag = header.value().substring(1, header.value().length - 1)
+        if ( etagCache.get(uri) match {
+          case Some(cachedEtag) => cachedEtag != etag
+          case None => true
+        }) {
+          httpResponse.entity.getDataBytes().to(FileIO.toPath(getTempFilePath(etag)))
+          etagCache.put(uri, etag)
+        }
       }
       case None => Unit
     }
     etagCache.get(uri) match {
-      case Some(etag) => readFromCache(etag)
+      case Some(_) => readFromCache(uri)
       case None => httpResponse.entity
     }
   }
 
   private def readFromCache(uri: String): ResponseEntity = {
+    ResponseEntity
     etagCache.get(uri) match {
-      case Some(etag) => FileIO.fromPath(getTempFilePath(etag)).to()
+      case Some(etag) => HttpResponse(OK, entity = HttpEntity.fromPath(ContentType(MediaTypes.`application/json`), getTempFilePath(etag))).entity
+      case None => HttpResponse(InternalServerError, entity = "").entity
     }
   }
 
