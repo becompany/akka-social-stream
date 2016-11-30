@@ -11,10 +11,4 @@ object GithubClient extends HttpClient with GithubJsonSupport {
   def events(org: String)(implicit ec: ExecutionContext): Future[List[Event]] =
     req[List[Event]](s"$baseUrl/orgs/$org/events")
 
-  def repositories(org: String)(implicit ec: ExecutionContext): Future[List[Repository]] =
-    req[List[Repository]](s"$baseUrl/orgs/$org/repos")
-
-  def commits(owner: String, repo: String)(implicit ec: ExecutionContext): Future[List[CommitPage]] =
-    req[List[CommitPage]](s"$baseUrl/repos/$owner/$repo/commits")
-
 }
