@@ -1,7 +1,10 @@
 package ch.becompany.social.github
 
+import java.time.Instant
+
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import ch.becompany.json._
+import ch.becompany.social.{Status, User}
 import spray.json._
 
 trait ReadOnlyJsonFormat[T] extends JsonFormat[T] {
@@ -119,24 +122,24 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     )
   )
 
-  implicit object EventFormat extends ReadOnlyJsonFormat[Event] {
+  implicit object EventFormat extends ReadOnlyJsonFormat[Status] {
     def read(value: JsValue) = value match {
-      case PushEvent(Seq(createdAt: String, login, size, repo)) =>
-        Event(createdAt, s"$login pushed $size commit(s) in repository $repo")
-      case CreateRepositoryEvent(Seq(createdAt: String, login, repo)) =>
-        Event(createdAt, s"$login created repository $repo")
-      case CreateBranchEvent(Seq(createdAt: String, login, branch, repo)) =>
-        Event(createdAt, s"$login created branch $branch in repository $repo")
-      case DeleteBranchEvent(Seq(createdAt: String, login, branch, repo)) =>
-        Event(createdAt, s"$login deleted branch $branch in repository $repo")
-      case MemberEvent(Seq(createdAt: String, member, action, repo)) =>
-        Event(createdAt, s"Member $member $action to repository $repo")
-      case IssuesEvent(Seq(createdAt: String, login, action, issue, repo)) =>
-        Event(createdAt, s"$login $action issue $issue in repository $repo")
-      case IssueCommentEvent(Seq(createdAt: String, login, issue, repo)) =>
-        Event(createdAt, s"$login commented on issue $issue in repository $repo")
-      case PullRequestEvent(Seq(createdAt: String, login, action, pr, repo)) =>
-        Event(createdAt, s"$login $action pull request $pr in repository $repo")
+      case PushEvent(Seq(createdAt: String, login: String, size, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login pushed $size commit(s) in repository $repo", null)
+      case CreateRepositoryEvent(Seq(createdAt: String, login: String, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login created repository $repo", null)
+      case CreateBranchEvent(Seq(createdAt: String, login: String, branch, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login created branch $branch in repository $repo", null)
+      case DeleteBranchEvent(Seq(createdAt: String, login: String, branch, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login deleted branch $branch in repository $repo", null)
+      case MemberEvent(Seq(createdAt: String, member: String, action, repo)) =>
+        Status(User(member, null), Instant.parse(createdAt), s"Member $member $action to repository $repo", null)
+      case IssuesEvent(Seq(createdAt: String, login: String, action, issue, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login $action issue $issue in repository $repo", null)
+      case IssueCommentEvent(Seq(createdAt: String, login: String, issue, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login commented on issue $issue in repository $repo", null)
+      case PullRequestEvent(Seq(createdAt: String, login: String, action, pr, repo)) =>
+        Status(User(login, null), Instant.parse(createdAt), s"$login $action pull request $pr in repository $repo", null)
       case _ => throw DeserializationException(s"""Unsupported event JSON: $value""")
     }
 
