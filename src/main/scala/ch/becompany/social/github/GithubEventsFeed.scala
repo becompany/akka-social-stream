@@ -1,26 +1,57 @@
 package ch.becompany.social.github
 
 import java.time.Instant
-import java.util.concurrent.TimeUnit
 
-import akka.Done
 import akka.actor.{ActorSystem, Cancellable}
 import akka.stream.OverflowStrategy
-import akka.stream.scaladsl.{Keep, Source}
+import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.Duration
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
 
-  var lastUpdate: Option[Instant] = None
+  private var lastUpdate: Option[Instant] = None
 
-  val system = ActorSystem()
-  val updateInterval = Duration.create(5, TimeUnit.MINUTES)
+  private val system = ActorSystem()
+  private val updateInterval = 5 minutes
 
-  override def source(numLast: Int): Source[Try[Status], _] = {
+  def isNew(status: Status): Boolean =
+    lastUpdate.forall(_.isBefore(status.date))
+
+  def events(numLast: Option[Int]): Future[List[Try[Status]]] = {
+    val eventsFuture = GithubClient.events(org)
+    numLast.
+      map(n => eventsFuture.map(_.takeRight(n))).
+      getOrElse(eventsFuture).
+      map(
+        _.filter(isNew).
+          sortBy(_.date).
+          map { status =>
+            lastUpdate = Some(status.date)
+            Try(status)
+          }
+      ).
+      recover { case e => List(Failure(e)) }
+  }
+
+  def eventSource(numLast: Option[Int] = None): Source[Try[Status], _] =
+    Source.
+      fromFuture(events(numLast)).
+      flatMapConcat(list => Source.fromIterator(() => list.iterator))
+
+  override def source(numLast: Int): Source[Try[Status], _] =
+    eventSource(Some(numLast)).
+      concat(
+        Source.
+          tick(0 seconds, updateInterval, ()).
+          flatMapConcat(_ => eventSource())
+      )
+
+
+  def source_DISABLED(numLast: Int): Source[Try[Status], _] = {
     var cancellable: Cancellable = null
     Source.queue[Try[Status]](bufferSize = 1000, OverflowStrategy.dropTail)
         .mapMaterializedValue { queue =>
