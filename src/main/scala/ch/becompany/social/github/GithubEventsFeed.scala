@@ -2,8 +2,8 @@ package ch.becompany.social.github
 
 import java.time.Instant
 
-import akka.actor.{ActorSystem, Cancellable}
-import akka.stream.OverflowStrategy
+import akka.actor.ActorSystem
+import akka.pattern.after
 import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
 
@@ -38,9 +38,10 @@ class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends Socia
     Source.
       unfoldAsync[(Option[Int], Instant), List[Try[Status]]]((Some(numLast), Instant.ofEpochSecond(0))) {
         case (numLastOption, lastUpdate) =>
-          // TODO: Add delay
-          events(numLastOption, lastUpdate).map { statuses =>
-            Some(((None, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
+          after(updateInterval, using = system.scheduler) {
+            events(numLastOption, lastUpdate).map { statuses =>
+              Some(((None, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
+            }
           }
       }.
       flatMapConcat(list => Source.fromIterator(() => list.iterator))
