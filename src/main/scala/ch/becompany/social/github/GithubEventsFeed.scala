@@ -9,48 +9,53 @@ import ch.becompany.social.{SocialFeed, Status}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
-
-  private var lastUpdate: Option[Instant] = None
 
   private val system = ActorSystem()
   private val updateInterval = 5 minutes
 
-  def isNew(status: Status): Boolean =
-    lastUpdate.forall(_.isBefore(status.date))
-
-  def events(numLast: Option[Int]): Future[List[Try[Status]]] = {
+  def events(numLast: Option[Int], lastUpdate: Instant): Future[List[Try[Status]]] = {
     val eventsFuture = GithubClient.events(org)
     numLast.
       map(n => eventsFuture.map(_.takeRight(n))).
       getOrElse(eventsFuture).
       map(
-        _.filter(isNew).
+        _.filter(_.date.isAfter(lastUpdate)).
           sortBy(_.date).
-          map { status =>
-            lastUpdate = Some(status.date)
-            Try(status)
-          }
+          map(Try(_))
       ).
       recover { case e => List(Failure(e)) }
   }
 
-  def eventSource(numLast: Option[Int] = None): Source[Try[Status], _] =
-    Source.
-      fromFuture(events(numLast)).
-      flatMapConcat(list => Source.fromIterator(() => list.iterator))
+  def getLastUpdate(statuses: List[Try[Status]]): Option[Instant] =
+    statuses.
+      collect { case Success(s) => s }.
+      lastOption.
+      map(_.date)
 
   override def source(numLast: Int): Source[Try[Status], _] =
+    Source.
+      unfoldAsync[(Option[Int], Instant), List[Try[Status]]]((Some(numLast), Instant.ofEpochSecond(0))) {
+        case (numLastOption, lastUpdate) =>
+          // TODO: Add delay
+          events(numLastOption, lastUpdate).map { statuses =>
+            Some(((None, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
+          }
+      }.
+      flatMapConcat(list => Source.fromIterator(() => list.iterator))
+
+  /*
     eventSource(Some(numLast)).
       concat(
         Source.
           tick(0 seconds, updateInterval, ()).
           flatMapConcat(_ => eventSource())
       )
+      */
 
-
+/*
   def source_DISABLED(numLast: Int): Source[Try[Status], _] = {
     var cancellable: Cancellable = null
     Source.queue[Try[Status]](bufferSize = 1000, OverflowStrategy.dropTail)
@@ -74,4 +79,5 @@ class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends Socia
           }
       }
   }
+  */
 }
