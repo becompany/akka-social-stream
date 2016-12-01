@@ -19,11 +19,10 @@ class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends Socia
   def events(numLast: Option[Int], lastUpdate: Instant): Future[List[Try[Status]]] = {
     val eventsFuture = GithubClient.events(org)
     numLast.
-      map(n => eventsFuture.map(_.takeRight(n))).
+      map(n => eventsFuture.map(_.sortBy(_.date).takeRight(n))).
       getOrElse(eventsFuture).
       map(
         _.filter(_.date.isAfter(lastUpdate)).
-          sortBy(_.date).
           map(Try(_))
       ).
       recover { case e => List(Failure(e)) }
