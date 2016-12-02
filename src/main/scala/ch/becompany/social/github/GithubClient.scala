@@ -1,10 +1,10 @@
 package ch.becompany.social.github
 
-import ch.becompany.http.HttpClient
+import ch.becompany.http.{CachingHttpClient, HttpClient}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object GithubClient extends HttpClient with GithubJsonSupport {
+object GithubClient extends CachingHttpClient with GithubJsonSupport {
 
   val baseUrl = "https://api.github.com"
 
