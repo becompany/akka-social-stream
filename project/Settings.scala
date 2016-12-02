@@ -7,6 +7,7 @@ object Settings {
     val akka = "2.4.12"
     val scalaTest = "3.0.0"
     val akkaHttp = "10.0.0"
+    val scalaCache = "0.9.3"
   }
 
   object Dependencies {
@@ -17,6 +18,7 @@ object Settings {
     val akkaHttp = "com.typesafe.akka" %% "akka-http-core" % Versions.akkaHttp
     val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.akkaHttp
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+    val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
   }
 
   val dependencies: Seq[ModuleID] = {
@@ -28,7 +30,8 @@ object Settings {
       akkaStreamTestkit,
       akkaHttp,
       akkaHttpSprayJson,
-      scalaTest
+      scalaTest,
+      scalaCacheCaffeine
     )
   }
 

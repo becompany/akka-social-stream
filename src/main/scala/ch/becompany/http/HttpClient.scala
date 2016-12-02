@@ -18,9 +18,11 @@ trait HttpClient {
   implicit val materializer = ActorMaterializer()
 
   def req[A](uri: String)(implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
-    Http().
-      singleRequest(HttpRequest(uri = uri, headers = getHeaders(uri))).
-      flatMap(response => handle(uri, response))
+    getHeaders(uri).flatMap { headers =>
+      Http().
+        singleRequest(HttpRequest(uri = uri, headers = headers)).
+        flatMap(response => handle(uri, response))
+    }
 
   def handle[A](uri: String, response: HttpResponse)(
     implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
@@ -36,7 +38,7 @@ trait HttpClient {
     }
   }
 
-  def getHeaders(uri: String): immutable.Seq[HttpHeader] =
-    immutable.Seq.empty
+  def getHeaders(uri: String)(implicit ec: ExecutionContext): Future[immutable.Seq[HttpHeader]] =
+    Future(immutable.Seq.empty)
 
 }
