@@ -22,3 +22,8 @@ class Feed[Tag](feeds: Map[Tag, SocialFeed]) {
     })
 
 }
+
+object Feed {
+  def apply[Tag](feeds: (Tag, SocialFeed)*): Feed[Tag] =
+    new Feed(feeds.toMap)
+}

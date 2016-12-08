@@ -36,11 +36,14 @@ class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends Socia
 
   override def source(numLast: Int): Source[Try[Status], _] =
     Source.
-      unfoldAsync[(Option[Int], Instant), List[Try[Status]]]((Some(numLast), Instant.ofEpochSecond(0))) {
-        case (numLastOption, lastUpdate) =>
-          after(updateInterval, using = system.scheduler) {
+      unfoldAsync[(Boolean, Instant), List[Try[Status]]]((true, Instant.ofEpochSecond(0))) {
+        case (first, lastUpdate) =>
+          val (delay, numLastOption) =
+            if (first) (0 seconds, Some(numLast))
+            else (updateInterval, None)
+          after(delay, using = system.scheduler) {
             events(numLastOption, lastUpdate).map { statuses =>
-              Some(((None, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
+              Some(((false, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
             }
           }
       }.

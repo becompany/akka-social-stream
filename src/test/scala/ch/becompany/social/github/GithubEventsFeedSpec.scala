@@ -23,10 +23,10 @@ class GithubEventsFeedSpec extends FlatSpec {
   "Github event feed" should "stream github events" in {
     val feed = new GithubEventsFeed("becompany")
 
-    feed.source(5).
-      map(t => { t.map(s => println(s.date, s.text)); t}).
+    feed.source(30).
+      map(t => { t.map(s => println(s.date, s.text, s.link)); t}).
       runWith(TestSink.probe[Try[Status]]).
-      request(20).
+      request(30).
       expectNextChainingPF {
         case Success(test) => println(test)
       }

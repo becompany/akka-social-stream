@@ -18,7 +18,7 @@ trait QueueSupport {
     queue.offer(Success(Status(
       User(
         status.getUser.getScreenName,
-        status.getUser.getName
+        Option(status.getUser.getName)
       ),
       status.getCreatedAt.toInstant,
       status.getText,
