@@ -7,6 +7,8 @@ object Settings {
     val akka = "2.4.12"
     val scalaTest = "3.0.0"
     val akkaHttp = "10.0.0"
+    val kOAuth = "1.1.0"
+    val json4s = "3.3.0"
   }
 
   object Dependencies {
@@ -17,6 +19,8 @@ object Settings {
     val akkaHttp = "com.typesafe.akka" %% "akka-http-core" % Versions.akkaHttp
     val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.akkaHttp
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
+    val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
+    val json4s = "org.json4s" %% "json4s-native" % Versions.json4s
   }
 
   val dependencies: Seq[ModuleID] = {
@@ -28,7 +32,9 @@ object Settings {
       akkaStreamTestkit,
       akkaHttp,
       akkaHttpSprayJson,
-      scalaTest
+      scalaTest,
+      kOAuth,
+      json4s
     )
   }
 
