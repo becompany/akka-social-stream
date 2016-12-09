@@ -8,7 +8,6 @@ object Settings {
     val scalaTest = "3.0.0"
     val akkaHttp = "10.0.0"
     val kOAuth = "1.1.0"
-    val json4s = "3.3.0"
     val scalaCache = "0.9.3"
   }
 
@@ -21,7 +20,6 @@ object Settings {
     val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.akkaHttp
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
     val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
-    val json4s = "org.json4s" %% "json4s-native" % Versions.json4s
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
   }
 
@@ -36,7 +34,6 @@ object Settings {
       akkaHttpSprayJson,
       scalaTest,
       kOAuth,
-      json4s,
       scalaCacheCaffeine
     )
   }
