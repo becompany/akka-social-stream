@@ -10,11 +10,21 @@ class TwitterFeed(screenName: String)(implicit ec: ExecutionContext)
   extends SocialFeed {
 
   private lazy val client = new TwitterClient(screenName)
-  private lazy val stream = TwitterStream("follow" -> screenName)
+  private lazy val streamFuture = client.userId.map(id => TwitterStream("follow" -> id))
 
-  override def source(numLast: Int): Source[Try[Status], _] =
+  override def source(numLast: Int): Source[Try[Status], _] = {
+    val latestFuture = client.latest(numLast)
+    val latestAndStream = for {
+      latest <- latestFuture
+      stream <- streamFuture
+    } yield (latest, stream)
     Source.
-      fromFuture(client.latest(numLast)).
-      flatMapConcat(list => Source.fromIterator(() => list.map(Try(_)).iterator)).
-      concat(stream.stream)
+      fromFuture(latestAndStream).
+      flatMapConcat {
+        case (latest, stream) =>
+          Source.
+            fromIterator(() => latest.map(Try(_)).iterator).
+            concat(stream.stream)
+      }
+  }
 }

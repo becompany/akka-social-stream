@@ -8,6 +8,8 @@ import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import ch.becompany.social.{Status, User}
 import spray.json._
 
+case class UserId(id: String)
+
 trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit object TweetJsonFormat extends JsonFormat[Status] {
@@ -40,6 +42,17 @@ trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
         case _ => throw DeserializationException("invalid tweet JSON")
       }
 
+  }
+
+  implicit object UserIdFormat extends RootJsonFormat[UserId] {
+    override def write(obj: UserId): JsValue =
+      throw new SerializationException("not supported")
+
+    override def read(json: JsValue): UserId =
+      json.asJsObject.getFields("id_str") match {
+        case Seq(JsString(id)) => UserId(id)
+        case _ => throw DeserializationException("invalid user JSON")
+      }
   }
 
 }
