@@ -1,9 +1,9 @@
 package ch.becompany.social.twitter
 
-import ch.becompany.http.oauth.OAuthConfig
+import ch.becompany.http.oauth.{OAuthConfig, OAuthSupport}
 
-trait TwitterOAuthConfig {
+trait TwitterOAuthSupport extends OAuthSupport {
 
-  private val oauthConfig = OAuthConfig.load("twitter")
+  val oauthConfig: OAuthConfig = OAuthConfig.load("twitter")
 
 }

@@ -7,12 +7,11 @@ import akka.http.scaladsl.model._
 import akka.http.scaladsl.model.headers.EntityTag
 import akka.http.scaladsl.unmarshalling.Unmarshal
 
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 import scalacache._
 import scalacache.caffeine._
 
-trait HttpCacheSupport extends HttpClient {
+trait CachingSupport extends HttpClient {
 
   type Cached[A] = (EntityTag, A)
   implicit val etagCache = ScalaCache(CaffeineCache())
@@ -29,7 +28,7 @@ trait HttpCacheSupport extends HttpClient {
       case _ => super.handle(handler, request, response)
     }
 
-  override def additionalHeaders(req: HttpRequest)(implicit ec: ExecutionContext): Future[immutable.Seq[HttpHeader]] =
+  abstract override def additionalHeaders(req: HttpRequest)(implicit ec: ExecutionContext): Future[Seq[HttpHeader]] =
     get[Cached[_], NoSerialization](req.uri) map {
       case Some((etag, _)) => scala.collection.immutable.Seq(headers.`If-None-Match`(etag))
       case None => Nil

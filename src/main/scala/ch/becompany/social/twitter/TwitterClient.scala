@@ -1,12 +1,13 @@
 package ch.becompany.social.twitter
 
 import akka.http.scaladsl.model.{HttpRequest, Uri}
-import ch.becompany.http.{HttpCacheSupport, HttpUtils, UnmarshallingHttpHandler}
+import ch.becompany.http.{CachingSupport, HttpClient, HttpUtils, UnmarshallingHttpHandler}
 import ch.becompany.social.Status
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class TwitterClient(user: String) extends HttpCacheSupport with TwitterJsonSupport {
+class TwitterClient(user: String)
+  extends HttpClient with CachingSupport with TwitterOAuthSupport with TwitterJsonSupport {
 
   import HttpUtils._
 

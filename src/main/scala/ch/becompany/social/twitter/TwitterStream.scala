@@ -15,13 +15,11 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
 class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
-  extends HttpClient with OAuthSupport with TwitterJsonSupport {
+  extends HttpClient with TwitterOAuthSupport with TwitterJsonSupport {
 
   private val url = "https://stream.twitter.com/1.1/statuses/filter.json"
 
   private val source = Uri(url)
-
-  val oauthConfig = OAuthConfig.load("twitter")
 
   private def httpRequest(): HttpRequest = HttpRequest(
     method = HttpMethods.POST,
