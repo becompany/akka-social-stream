@@ -4,27 +4,28 @@ import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.testkit.scaladsl.TestSink
 import ch.becompany.social.Status
-import org.scalatest.FlatSpec
+import org.scalatest.{FlatSpec, Inspectors, Matchers}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Try}
 
-class TwitterStreamSpec extends FlatSpec {
+class TwitterStreamSpec extends FlatSpec with Matchers with Inspectors {
 
   implicit val system = ActorSystem("twitter-stream-spec")
   implicit val materializer = ActorMaterializer()
 
+  val keyword = "happy"
+  val n = 100
+
   "Twitter stream" should "stream tweets" in {
 
-    TwitterStream("track" -> "happy").
+    val results = TwitterStream("track" -> keyword).
       stream.
-      map(t => {println(t); t}).
       runWith(TestSink.probe[Try[Status]]).
-      request(20).
-      expectNextChainingPF {
-        case Success(Status(_, _, _, _)) =>
-      }
+      request(n).
+      expectNextN(n)
 
+    forAll(results)(_ should matchPattern { case Success(Status(_, _, _, _)) => })
   }
 
 }
