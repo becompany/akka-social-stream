@@ -1,12 +1,12 @@
 package ch.becompany.social.github
 
 import akka.http.scaladsl.model.{HttpRequest, Uri}
-import ch.becompany.http.{CachingHttpClient, HttpClient, UnmarshallingHttpHandler}
+import ch.becompany.http.{HttpCacheSupport, HttpClient, UnmarshallingHttpHandler}
 import ch.becompany.social.Status
 
 import scala.concurrent.{ExecutionContext, Future}
 
-object GithubClient extends CachingHttpClient with GithubJsonSupport {
+object GithubClient extends HttpClient with HttpCacheSupport with GithubJsonSupport {
 
   val baseUrl = "https://api.github.com"
 

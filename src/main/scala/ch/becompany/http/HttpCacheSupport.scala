@@ -12,7 +12,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scalacache._
 import scalacache.caffeine._
 
-trait CachingHttpClient extends HttpClient {
+trait HttpCacheSupport extends HttpClient {
 
   type Cached[A] = (EntityTag, A)
   implicit val etagCache = ScalaCache(CaffeineCache())
