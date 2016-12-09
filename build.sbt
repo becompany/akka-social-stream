@@ -5,4 +5,5 @@ lazy val root = (project in file(".")).
     version := "0.1.0-SNAPSHOT",
     scalaVersion := "2.11.8",
     libraryDependencies ++= Settings.dependencies
-  )
+  ).
+  enablePlugins(SiteScaladocPlugin)

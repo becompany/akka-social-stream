@@ -11,7 +11,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success, Try}
 
-class GithubEventsFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
+class GithubFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
 
   private val system = ActorSystem()
   private val updateInterval = 5 minutes

@@ -10,7 +10,7 @@ import org.scalatest.FlatSpec
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Success, Try}
 
-class GithubEventsFeedSpec extends FlatSpec {
+class GithubFeedSpec extends FlatSpec {
 
   implicit val system = ActorSystem(
     "github-feed-spec",
@@ -21,7 +21,7 @@ class GithubEventsFeedSpec extends FlatSpec {
   implicit val materializer = ActorMaterializer()
 
   "Github event feed" should "stream github events" in {
-    val feed = new GithubEventsFeed("becompany")
+    val feed = new GithubFeed("becompany")
 
     feed.source(30).
       map(t => { t.map(s => println(s.date, s.text, s.link)); t}).
