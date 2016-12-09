@@ -32,6 +32,7 @@ class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
     Future(response.entity.dataBytes.
       via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true)).
       map(_.utf8String).
+      filter(_.length > 0).
       map(json => Try(TweetJsonFormat.read(json.parseJson))))
 
   private def httpErrorSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
