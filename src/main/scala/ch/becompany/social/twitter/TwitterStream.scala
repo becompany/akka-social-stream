@@ -1,27 +1,23 @@
 package ch.becompany.social.twitter
 
-import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.util.Locale
+import java.io.IOException
 
-import akka.NotUsed
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.HttpHeader.ParsingResult
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
-import ch.becompany.social.{Status, User}
-import com.hunorkovacs.koauth.domain.KoauthRequest
-import com.hunorkovacs.koauth.service.consumer.DefaultConsumerService
+import akka.stream.scaladsl.{Framing, Source}
+import akka.util.ByteString
+import ch.becompany.social.Status
 import org.json4s.DefaultFormats
-import org.json4s.native.JsonMethods.parse
+import spray.json._
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
-class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext) {
+class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
+  extends OAuthSupport with TwitterJsonSupport {
 
   private val url = "https://stream.twitter.com/1.1/statuses/filter.json"
 
@@ -29,74 +25,45 @@ class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext) 
   implicit val materializer = ActorMaterializer()
   implicit val formats = DefaultFormats
 
-  private val conf = OAuthConfig.load
-
-  private val consumer = new DefaultConsumerService(system.dispatcher)
-
   private val source = Uri(url)
 
-  private val dateParser = DateTimeFormatter.
-    ofPattern("EEE MMM dd HH:mm:ss Z yyyy").
-    withLocale(Locale.ENGLISH)
+  private def httpRequest(oauthHeader: HttpHeader): HttpRequest =  HttpRequest(
+    method = HttpMethods.POST,
+    uri = source,
+    headers = List(oauthHeader, headers.Accept(MediaRanges.`*/*`)),
+    entity = FormData(filter).toEntity
+  )
 
-  private def parseDate(s: String): Instant =
-    Instant.from(dateParser.parse(s))
+  private def httpSuccessSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
+    Future(response.entity.dataBytes.
+      via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true)).
+      map(_.utf8String).
+      map(json => Try(TweetJsonFormat.read(json.parseJson))))
 
-  private def link(tweet: Tweet): String =
-    s"https://twitter.com/statuses/${tweet.id_str}"
+  private def httpErrorSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
+    response.entity.toStrict(5 seconds).
+      map(_.data.utf8String).
+      map(msg => Source.single(Failure(new IOException(msg))))
 
-  private def oauthHeader: Future[String] =
-    consumer.createOauthenticatedRequest(
-      KoauthRequest(
-        method = "POST",
-        url = url,
-        authorizationHeader = None,
-        body = Some(filter.map{ case (k, v) => s"$k=$v" }.mkString("&"))),
-      conf.consumerKey, conf.consumerSecret, conf.accessToken, conf.accessTokenSecret).
-      map(_.header)
-
-  private def toStatus(tweet: Tweet): Status =
-    Status(
-      author = User(tweet.user.screen_name, Option(tweet.user.name)),
-      date = parseDate(tweet.created_at),
-      text = tweet.text,
-      link = link(tweet))
-
-  private def request: Future[Source[Try[Status], Any]] =
-    oauthHeader.flatMap { header =>
-      val httpHeaders: List[HttpHeader] = List(
-        HttpHeader.parse("Authorization", header) match {
-          case ParsingResult.Ok(h, _) => Some(h)
-          case _ => None
-        },
-        HttpHeader.parse("Accept", "*/*") match {
-          case ParsingResult.Ok(h, _) => Some(h)
-          case _ => None
-        }
-      ).flatten
-      val httpRequest: HttpRequest = HttpRequest(
-        method = HttpMethods.POST,
-        uri = source,
-        headers = httpHeaders,
-        entity = FormData(filter).toEntity
-      )
-      Http().singleRequest(httpRequest).flatMap { response =>
-        if (response.status == StatusCodes.OK) {
-          Future(response.entity.dataBytes
-            .scan("")((acc, curr) => if (acc.contains("\r\n")) curr.utf8String else acc + curr.utf8String)
-            .filter(_.contains("\r\n"))
-            .map(json => Try(parse(json).extract[Tweet]).map(toStatus)))
-        } else {
-          response.entity.toStrict(5 seconds).
-            map(_.data.utf8String).
-            map(msg => Source.single(Failure(new IllegalStateException(msg))))
-        }
-      }
-    }.recover {
-      case e => Source.single(Failure(e))
+  private def httpSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
+    response.status match {
+      case StatusCodes.OK => httpSuccessSource(response)
+      case _ => httpErrorSource(response)
     }
 
-  def stream: Source[Try[Status], Any] =
-    Source.fromFuture(request).flatMapConcat(identity)
+  private def request: Future[Source[Try[Status], Any]] =
+    for {
+      oauthHdr <- oauthHeader(url, filter)
+      response <- Http().singleRequest(httpRequest(oauthHdr))
+      source <- httpSource(response)
+    } yield {
+      source
+    }
+
+  def stream: Source[Try[Status], Any] = {
+    // Emit error instead of failing the complete stream
+    val futureSrc = request.recover { case e => Source.single(Failure(e)) }
+    Source.fromFuture(futureSrc).flatMapConcat(identity)
+  }
 
 }
