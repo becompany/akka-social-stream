@@ -5,7 +5,6 @@ import java.io.IOException
 import akka.http.scaladsl.model._
 import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
-import ch.becompany.http.oauth.{OAuthConfig, OAuthSupport}
 import ch.becompany.http.{HttpClient, HttpHandler}
 import ch.becompany.social.Status
 import spray.json._
