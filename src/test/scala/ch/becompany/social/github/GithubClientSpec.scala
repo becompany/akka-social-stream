@@ -13,7 +13,7 @@ class GithubClientSpec extends FlatSpec {
   "A github client" should "receive events" in {
     val f = events("becompany")
     f map(_.mkString("\n")) foreach println
-    Await.result(f, 10 seconds)
+    assert(Await.result(f, 10 seconds).size == 30)
   }
 
 }
