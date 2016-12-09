@@ -6,11 +6,11 @@ import ch.becompany.social.{SocialFeed, Status}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class TwitterFeed(user: String)(implicit ec: ExecutionContext)
+class TwitterFeed(screenName: String)(implicit ec: ExecutionContext)
   extends SocialFeed {
 
-  private lazy val client = new TwitterClient(user)
-  private lazy val stream = TwitterStream("follow" -> user)
+  private lazy val client = new TwitterClient(screenName)
+  private lazy val stream = TwitterStream("follow" -> screenName)
 
   override def source(numLast: Int): Source[Try[Status], _] =
     Source.
