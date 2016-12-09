@@ -1,34 +1,30 @@
 package ch.becompany.social.twitter
 
-import akka.stream.OverflowStrategy
 import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
-import com.typesafe.config.ConfigFactory
-import twitter4j.conf.ConfigurationBuilder
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class TwitterFeed(user: Option[String]) extends SocialFeed {
+class TwitterFeed(screenName: String)(implicit ec: ExecutionContext)
+  extends SocialFeed {
 
-  private lazy val conf = ConfigFactory.load.getConfig("scalaSocialFeed.twitter")
+  private lazy val client = new TwitterClient(screenName)
+  private lazy val streamFuture = client.userId.map(id => TwitterStream("follow" -> id))
 
-  private lazy val config = new ConfigurationBuilder().
-    setOAuthConsumerKey(conf.getString("consumerKey")).
-    setOAuthConsumerSecret(conf.getString("consumerSecret")).
-    setOAuthAccessToken(conf.getString("accessToken")).
-    setOAuthAccessTokenSecret(conf.getString("accessTokenSecret")).
-    build
-
-  def source(num: Int): Source[Try[Status], _] = {
-
-    val async = new TwitterAsync(config, user)
-    val stream = new TwitterStream(config, user)
-
-    Source.queue[Try[Status]](bufferSize = 1000, OverflowStrategy.fail).
-      mapMaterializedValue { queue =>
-        async.recent(num)(queue)
-        stream.stream(queue)
+  override def source(numLast: Int): Source[Try[Status], _] = {
+    val latestFuture = client.latest(numLast)
+    val latestAndStream = for {
+      latest <- latestFuture
+      stream <- streamFuture
+    } yield (latest, stream)
+    Source.
+      fromFuture(latestAndStream).
+      flatMapConcat {
+        case (latest, stream) =>
+          Source.
+            fromIterator(() => latest.map(Try(_)).iterator).
+            concat(stream.stream)
       }
   }
-
 }

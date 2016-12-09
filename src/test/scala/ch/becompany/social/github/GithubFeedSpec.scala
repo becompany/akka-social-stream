@@ -3,7 +3,7 @@ package ch.becompany.social.github
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.testkit.scaladsl.TestSink
-import ch.becompany.social.{Status, User}
+import ch.becompany.social.Status
 import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 
@@ -12,12 +12,7 @@ import scala.util.{Success, Try}
 
 class GithubFeedSpec extends FlatSpec {
 
-  implicit val system = ActorSystem(
-    "github-feed-spec",
-    ConfigFactory.
-      parseString("akka.test.single-expect-default=60 seconds")
-      .withFallback(ConfigFactory.load())
-  )
+  implicit val system = ActorSystem("github-feed-spec")
   implicit val materializer = ActorMaterializer()
 
   "Github event feed" should "stream github events" in {

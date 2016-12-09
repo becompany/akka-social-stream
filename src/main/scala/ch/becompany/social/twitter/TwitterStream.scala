@@ -1,28 +1,63 @@
 package ch.becompany.social.twitter
 
-import akka.stream.scaladsl.SourceQueueWithComplete
+import java.io.IOException
+
+import akka.http.scaladsl.model._
+import akka.stream.scaladsl.{Framing, Source}
+import akka.util.ByteString
+import ch.becompany.http.{HttpClient, HttpHandler}
 import ch.becompany.social.Status
-import twitter4j.conf.Configuration
-import twitter4j.{TwitterStreamFactory, UserStreamAdapter}
+import spray.json._
 
-import scala.util.Try
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Try}
 
-class TwitterStreamListener(val queue: SourceQueueWithComplete[Try[Status]])
-  extends UserStreamAdapter with QueueSupport {
+class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
+  extends HttpClient with TwitterOAuthSupport with TwitterJsonSupport {
 
-  override def onStatus(st: twitter4j.Status): Unit = status(st)
+  private val url = "https://stream.twitter.com/1.1/statuses/filter.json"
 
-  override def onException(e: Exception): Unit = error(e)
+  private val source = Uri(url)
+
+  private def httpRequest(): HttpRequest = HttpRequest(
+    method = HttpMethods.POST,
+    uri = source,
+    headers = List(headers.Accept(MediaRanges.`*/*`)),
+    entity = FormData(filter).toEntity
+  )
+
+  private def httpSuccessSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
+    Future(response.entity.dataBytes.
+      via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true)).
+      map(_.utf8String).
+      filter(_.length > 0).
+      map(json => Try(TweetJsonFormat.read(json.parseJson))))
+
+  private def httpErrorSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
+    response.entity.toStrict(5 seconds).
+      map(_.data.utf8String).
+      map(msg => Source.single(Failure(new IOException(msg))))
+
+  implicit object handler extends HttpHandler[Source[Try[Status], Any]] {
+    override def handle(request: HttpRequest, response: HttpResponse)(implicit ec: ExecutionContext): Future[Source[Try[Status], Any]] =
+      response.status match {
+        case StatusCodes.OK => httpSuccessSource(response)
+        case _ => httpErrorSource(response)
+      }
+  }
+
+  def stream: Source[Try[Status], Any] = {
+    // Emit error instead of failing the complete stream
+    val futureSrc = req(httpRequest()).recover { case e => Source.single(Failure(e)) }
+    Source.fromFuture(futureSrc).flatMapConcat(identity)
+  }
 
 }
 
-class TwitterStream(config: Configuration, user: Option[String]) {
+object TwitterStream {
 
-  def stream(queue: SourceQueueWithComplete[Try[Status]]): Unit = {
-    val twitterStream = new TwitterStreamFactory(config).getInstance
-    val listener = new TwitterStreamListener(queue)
-    twitterStream.addListener(listener)
-    twitterStream.user()
-  }
+  def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
+    new TwitterStream(filter.toMap)
 
 }
