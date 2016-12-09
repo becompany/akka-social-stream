@@ -6,16 +6,15 @@ import ch.becompany.social.{SocialFeed, Status}
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
-class TwitterFeed(filter: Map[String, String])(implicit ec: ExecutionContext)
+class TwitterFeed(user: String)(implicit ec: ExecutionContext)
   extends SocialFeed {
 
-  private lazy val stream = new TwitterStream(filter)
+  private lazy val client = new TwitterClient(user)
+  private lazy val stream = TwitterStream("follow" -> user)
 
   override def source(numLast: Int): Source[Try[Status], _] =
-    stream.stream
-}
-
-object TwitterFeed {
-  def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterFeed =
-    new TwitterFeed(filter.toMap)
+    Source.
+      fromFuture(client.latest(numLast)).
+      flatMapConcat(list => Source.fromIterator(() => list.map(Try(_)).iterator)).
+      concat(stream.stream)
 }

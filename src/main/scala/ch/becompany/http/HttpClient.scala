@@ -1,44 +1,30 @@
 package ch.becompany.http
 
-import java.io.IOException
-
 import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
-import akka.http.scaladsl.model.StatusCodes._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.ActorMaterializer
 
-import scala.collection.immutable
 import scala.concurrent.{ExecutionContext, Future}
 
-trait HttpClient {
+abstract class HttpClient {
 
   implicit val system = ActorSystem()
   implicit val materializer = ActorMaterializer()
 
-  def req[A](uri: String)(implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
-    getHeaders(uri).flatMap { headers =>
-      Http().
-        singleRequest(HttpRequest(uri = uri, headers = headers)).
-        flatMap(response => handle(uri, response))
-    }
+  def req[A](req: HttpRequest)(implicit handler: HttpHandler[A], ec: ExecutionContext): Future[A] =
+    for {
+      headers <- additionalHeaders(req)
+      request = req.withHeaders(req.headers ++ headers)
+      response <- Http().singleRequest(request)
+      result <- handle(handler, request, response)
+    } yield result
 
-  def handle[A](uri: String, response: HttpResponse)(
-    implicit unmarshaller: Unmarshaller[ResponseEntity, A], ec: ExecutionContext): Future[A] =
-    response.status match {
-      case OK => Unmarshal(response.entity).to[A]
-      case _ => handleError(response)
-    }
+  def handle[A](handler: HttpHandler[A], request: HttpRequest, response: HttpResponse)
+               (implicit ec: ExecutionContext): Future[A] =
+    handler.handle(request, response)
 
-  def handleError[A](response: HttpResponse)(implicit ec: ExecutionContext): Future[A] = {
-    Unmarshal(response.entity).to[String].flatMap { entity =>
-      val error = s"HTTP error ${response.status}: $entity"
-      Future.failed(new IOException(error))
-    }
-  }
-
-  def getHeaders(uri: String)(implicit ec: ExecutionContext): Future[immutable.Seq[HttpHeader]] =
-    Future(immutable.Seq.empty)
+  def additionalHeaders(req: HttpRequest)(implicit ec: ExecutionContext): Future[Seq[HttpHeader]] =
+    Future(Seq.empty)
 
 }

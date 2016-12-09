@@ -2,14 +2,12 @@ package ch.becompany.social.twitter
 
 import java.io.IOException
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
-import akka.stream.ActorMaterializer
 import akka.stream.scaladsl.{Framing, Source}
 import akka.util.ByteString
+import ch.becompany.http.oauth.{OAuthConfig, OAuthSupport}
+import ch.becompany.http.{HttpClient, HttpHandler}
 import ch.becompany.social.Status
-import org.json4s.DefaultFormats
 import spray.json._
 
 import scala.concurrent.duration._
@@ -17,20 +15,18 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
 class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
-  extends OAuthSupport with TwitterJsonSupport {
+  extends HttpClient with OAuthSupport with TwitterJsonSupport {
 
   private val url = "https://stream.twitter.com/1.1/statuses/filter.json"
 
-  implicit val system = ActorSystem()
-  implicit val materializer = ActorMaterializer()
-  implicit val formats = DefaultFormats
-
   private val source = Uri(url)
 
-  private def httpRequest(oauthHeader: HttpHeader): HttpRequest =  HttpRequest(
+  val oauthConfig = OAuthConfig.load("twitter")
+
+  private def httpRequest(): HttpRequest = HttpRequest(
     method = HttpMethods.POST,
     uri = source,
-    headers = List(oauthHeader, headers.Accept(MediaRanges.`*/*`)),
+    headers = List(headers.Accept(MediaRanges.`*/*`)),
     entity = FormData(filter).toEntity
   )
 
@@ -45,25 +41,25 @@ class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
       map(_.data.utf8String).
       map(msg => Source.single(Failure(new IOException(msg))))
 
-  private def httpSource(response: HttpResponse): Future[Source[Try[Status], Any]] =
-    response.status match {
-      case StatusCodes.OK => httpSuccessSource(response)
-      case _ => httpErrorSource(response)
-    }
-
-  private def request: Future[Source[Try[Status], Any]] =
-    for {
-      oauthHdr <- oauthHeader(url, filter)
-      response <- Http().singleRequest(httpRequest(oauthHdr))
-      source <- httpSource(response)
-    } yield {
-      source
-    }
+  implicit object handler extends HttpHandler[Source[Try[Status], Any]] {
+    override def handle(request: HttpRequest, response: HttpResponse)(implicit ec: ExecutionContext): Future[Source[Try[Status], Any]] =
+      response.status match {
+        case StatusCodes.OK => httpSuccessSource(response)
+        case _ => httpErrorSource(response)
+      }
+  }
 
   def stream: Source[Try[Status], Any] = {
     // Emit error instead of failing the complete stream
-    val futureSrc = request.recover { case e => Source.single(Failure(e)) }
+    val futureSrc = req(httpRequest()).recover { case e => Source.single(Failure(e)) }
     Source.fromFuture(futureSrc).flatMapConcat(identity)
   }
+
+}
+
+object TwitterStream {
+
+  def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
+    new TwitterStream(filter.toMap)
 
 }
