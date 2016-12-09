@@ -13,7 +13,7 @@ class TwitterClientSpec extends FlatSpec with Matchers with Inspectors {
   implicit val system = ActorSystem("twitter-client-spec")
   implicit val materializer = ActorMaterializer()
 
-  val username = "twittersuggests"
+  val username = "BeCompany_CH"
 
   "Twitter client" should "stream tweets" in {
 
