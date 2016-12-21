@@ -21,7 +21,7 @@ val feed = new Feed(
 )
 ~~~
 
-Stream the latest 10 and all subsequent status messages (see [`Status`]() class for details):
+Stream the latest 10 and all subsequent status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
 
 ~~~ scala
 feed.source(10).runForeach { case (network, status) =>
