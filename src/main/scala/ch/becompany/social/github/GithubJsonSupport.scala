@@ -133,6 +133,15 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     )
   )
 
+  object WatchEvent extends JsonExtractor(
+    EJsObject(
+      "type" -> JsString("WatchEvent"),
+      "created_at" -> EJsString,
+      "actor" -> extractUser,
+      "repo" -> extractRepo
+    )
+  )
+
   object GenericRepoEvent extends JsonExtractor(
     EJsObject(
       "type" -> EJsString,
@@ -161,6 +170,8 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
         Status(User(login), Instant.parse(createdAt), s"$login $action pull request $pr in repository $repo", repoUrl(repo))
       case ForkEvent(Seq(createdAt: String, login: String, repo: String)) =>
         Status(User(login), Instant.parse(createdAt), s"$login forked repository $repo", repoUrl(repo))
+      case WatchEvent(Seq(createdAt: String, login: String, repo: String)) =>
+        Status(User(login), Instant.parse(createdAt), s"$login starred repository $repo", repoUrl(repo))
       case GenericRepoEvent(Seq(eventType: String, createdAt: String, repo: String)) =>
         Status(User("unknown"), Instant.parse(createdAt), s"$eventType in repository $repo", repoUrl(repo))
       case _ => throw DeserializationException(s"""Unsupported event JSON: $value""")
