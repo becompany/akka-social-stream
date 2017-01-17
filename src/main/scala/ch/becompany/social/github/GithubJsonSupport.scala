@@ -150,30 +150,30 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     )
   )
 
-  implicit object EventFormat extends ReadOnlyJsonFormat[Status] {
+  implicit object EventFormat extends ReadOnlyJsonFormat[(Instant, Status)] {
     def read(value: JsValue) = value match {
       case PushEvent(Seq(createdAt: String, login: String, size, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login pushed $size commit(s) in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login pushed $size commit(s) in repository $repo", repoUrl(repo)))
       case CreateRepositoryEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login created repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login created repository $repo", repoUrl(repo)))
       case CreateBranchEvent(Seq(createdAt: String, login: String, branch, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login created branch $branch in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login created branch $branch in repository $repo", repoUrl(repo)))
       case DeleteBranchEvent(Seq(createdAt: String, login: String, branch, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login deleted branch $branch in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login deleted branch $branch in repository $repo", repoUrl(repo)))
       case MemberEvent(Seq(createdAt: String, member: String, action, repo: String)) =>
-        Status(User(member), Instant.parse(createdAt), s"Member $member $action to repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(member), s"Member $member $action to repository $repo", repoUrl(repo)))
       case IssuesEvent(Seq(createdAt: String, login: String, action, issue, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login $action issue $issue in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login $action issue $issue in repository $repo", repoUrl(repo)))
       case IssueCommentEvent(Seq(createdAt: String, login: String, issue, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login commented on issue $issue in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login commented on issue $issue in repository $repo", repoUrl(repo)))
       case PullRequestEvent(Seq(createdAt: String, login: String, action, pr, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login $action pull request $pr in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login $action pull request $pr in repository $repo", repoUrl(repo)))
       case ForkEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login forked repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login forked repository $repo", repoUrl(repo)))
       case WatchEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        Status(User(login), Instant.parse(createdAt), s"$login starred repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User(login), s"$login starred repository $repo", repoUrl(repo)))
       case GenericRepoEvent(Seq(eventType: String, createdAt: String, repo: String)) =>
-        Status(User("unknown"), Instant.parse(createdAt), s"$eventType in repository $repo", repoUrl(repo))
+        (Instant.parse(createdAt), Status(User("unknown"), s"$eventType in repository $repo", repoUrl(repo)))
       case _ => throw DeserializationException(s"""Unsupported event JSON: $value""")
     }
 

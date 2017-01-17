@@ -1,9 +1,11 @@
 package ch.becompany.social.twitter
 
+import java.time.Instant
+
 import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 /**
@@ -21,23 +23,20 @@ class TwitterFeed(screenName: String)(implicit ec: ExecutionContext)
   private lazy val streamFuture = client.userId.map(id => TwitterStream("follow" -> id))
 
   /**
+    * Returns the latest `num` Twitter tweets.
+    * @param num The number of tweets to emit.
+    * @return A future list of tweets.
+    */
+  override def latest(num: Int): Future[List[(Instant, Status)]] =
+    client.latest(num)
+
+  /**
     * Streams Twitter tweets.
-    * @param numLast The number of previous tweets to prepend to the stream.
     * @return The source providing the stream.
     */
-  override def source(numLast: Int): Source[Try[Status], _] = {
-    val latestFuture = client.latest(numLast)
-    val latestAndStream = for {
-      latest <- latestFuture
-      stream <- streamFuture
-    } yield (latest, stream)
+  override def stream(): Source[(Instant, Try[Status]), _] =
     Source.
-      fromFuture(latestAndStream).
-      flatMapConcat {
-        case (latest, stream) =>
-          Source.
-            fromIterator(() => latest.map(Try(_)).iterator).
-            concat(stream.stream)
-      }
-  }
+      fromFuture(streamFuture).
+      flatMapConcat(_.stream)
+
 }

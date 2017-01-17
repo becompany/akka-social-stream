@@ -8,6 +8,7 @@ object Settings {
     val akkaHttp = "10.0.0"
     val kOAuth = "1.1.0"
     val scalaCache = "0.9.3"
+    val scalaLogging = "3.5.0"
   }
 
   object Dependencies {
@@ -18,6 +19,7 @@ object Settings {
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
     val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
+    val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % Versions.scalaLogging
   }
 
   val dependencies: Seq[ModuleID] = {
@@ -29,7 +31,8 @@ object Settings {
       akkaHttpSprayJson,
       scalaTest,
       kOAuth,
-      scalaCacheCaffeine
+      scalaCacheCaffeine,
+      scalaLogging
     )
   }
 

@@ -12,7 +12,7 @@ case class UserId(id: String)
 
 trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
-  implicit object TweetJsonFormat extends JsonFormat[Status] {
+  implicit object TweetJsonFormat extends JsonFormat[(Instant, Status)] {
 
     private val dateParser = DateTimeFormatter.
       ofPattern("EEE MMM dd HH:mm:ss Z yyyy").
@@ -24,19 +24,18 @@ trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     private def link(id: String): String =
       s"https://twitter.com/statuses/$id"
 
-    override def write(obj: Status): JsValue =
+    override def write(obj: (Instant, Status)): JsValue =
       throw new SerializationException("not supported")
 
-    override def read(json: JsValue): Status =
+    override def read(json: JsValue): (Instant, Status) =
       json.asJsObject.getFields("id_str", "created_at", "text", "user") match {
         case Seq(JsString(id), JsString(createdAt), JsString(text), user: JsObject) =>
           user.getFields("screen_name", "name") match {
             case Seq(JsString(screenName), JsString(name)) =>
-              Status(
+              (parseDate(createdAt), Status(
                 author = User(screenName, Option(name)),
-                date = parseDate(createdAt),
                 text = text,
-                link = link(id))
+                link = link(id)))
             case _ => throw DeserializationException("invalid user JSON")
           }
         case _ => throw DeserializationException("invalid tweet JSON")

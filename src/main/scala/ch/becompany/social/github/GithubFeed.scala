@@ -19,43 +19,44 @@ import scala.util.{Failure, Success, Try}
 class GithubFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
 
   private val system = ActorSystem()
-  private val updateInterval = 5 minutes
-
-  private def events(numLast: Option[Int], lastUpdate: Instant): Future[List[Try[Status]]] = {
-    val eventsFuture = GithubClient.events(org)
-    numLast.
-      map(n => eventsFuture.map(_.sortBy(_.date).takeRight(n))).
-      getOrElse(eventsFuture).
-      map(
-        _.filter(_.date.isAfter(lastUpdate)).
-          map(Try(_))
-      ).
-      recover { case e => List(Failure(e)) }
-  }
-
-  private def getLastUpdate(statuses: List[Try[Status]]): Option[Instant] =
-    statuses.
-      collect { case Success(s) => s }.
-      lastOption.
-      map(_.date)
+  private val updateInterval = 1 minute
 
   /**
-    * Streams GitHub events.
-    * @param numLast The number of previous events to prepend to the stream.
+    * Returns the latest `num` GitHub events.
+    * @param num The number of events to emit.
+    * @return A future list of events.
+    */
+  override def latest(num: Int): Future[List[(Instant, Status)]] =
+    GithubClient.events(org).map(_.sortBy(_._1).takeRight(num))
+
+  private def events(lastUpdate: Instant): Future[List[(Instant, Try[Status])]] =
+    GithubClient.events(org).
+      map(_.
+        filter(_._1.isAfter(lastUpdate)).
+        sortBy(_._1).
+        map { case (date, status) => (date, Try(status)) }
+      ).
+      recover { case e => List(Instant.now -> Failure(e)) }
+
+  private def getLastUpdate(statuses: List[(Instant, Try[Status])]): Option[Instant] =
+    statuses.
+      lastOption.
+      map(_._1)
+
+  /**
+    * Streams GitHub events. The stream is populated using periodic requests;
+    * the interval between requests is set in the `updateInterval` value. The first
+    * request is emitted after `updateInterval`.
     * @return The source providing the stream.
     */
-  override def source(numLast: Int): Source[Try[Status], _] =
+  override def stream(): Source[(Instant, Try[Status]), _] =
     Source.
-      unfoldAsync[(Boolean, Instant), List[Try[Status]]]((true, Instant.ofEpochSecond(0))) {
-        case (first, lastUpdate) =>
-          val (delay, numLastOption) =
-            if (first) (0 seconds, Some(numLast))
-            else (updateInterval, None)
-          after(delay, using = system.scheduler) {
-            events(numLastOption, lastUpdate).map { statuses =>
-              Some(((false, getLastUpdate(statuses).getOrElse(lastUpdate)), statuses))
-            }
+      unfoldAsync[Instant, List[(Instant, Try[Status])]](Instant.now) { lastUpdate =>
+        after(updateInterval, using = system.scheduler) {
+          events(lastUpdate) map { statuses =>
+            Some((getLastUpdate(statuses) getOrElse lastUpdate, statuses))
           }
+        }
       }.
       flatMapConcat(list => Source.fromIterator(() => list.iterator))
 

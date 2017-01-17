@@ -1,10 +1,11 @@
 package ch.becompany.social.github
 
+import java.time.Instant
+
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import akka.stream.testkit.scaladsl.TestSink
 import ch.becompany.social.Status
-import com.typesafe.config.ConfigFactory
 import org.scalatest.FlatSpec
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -15,15 +16,15 @@ class GithubFeedSpec extends FlatSpec {
   implicit val system = ActorSystem("github-feed-spec")
   implicit val materializer = ActorMaterializer()
 
-  "Github event feed" should "stream github events" in {
+  "Github event feed" should "stream GitHub events" in {
     val feed = new GithubFeed("becompany")
 
-    feed.source(30).
-      map(t => { t.map(s => println(s.date, s.text, s.link)); t}).
-      runWith(TestSink.probe[Try[Status]]).
+    feed.stream().
+      map(t => { println(t); t }).
+      runWith(TestSink.probe[(Instant, Try[Status])]).
       request(30).
       expectNextChainingPF {
-        case Success(test) => println(test)
+        case (date, Success(test)) => println(date, test)
       }
   }
 
