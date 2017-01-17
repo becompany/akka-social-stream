@@ -7,7 +7,7 @@ Generate a feed of social network status messages as Akka stream.
 Add the dependency to your SBT build file:
 
 ~~~ sbt
-libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0-SNAPSHOT"
+libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0"
 ~~~
 
 ## Usage
