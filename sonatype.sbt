@@ -16,7 +16,7 @@ pomExtra in Global := {
     <developers>
       <developer>
         <id>devkat</id>
-        <name>Andreas Jim-Hartmamm</name>
+        <name>Andreas Jim-Hartmann</name>
         <url>https://github.com/devkat</url>
       </developer>
     </developers>
