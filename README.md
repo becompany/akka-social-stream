@@ -12,7 +12,7 @@ libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0"
 
 ## Usage
 
-Declare a stream for Twitter tweets and GitHub events. Stream the latest 10 and all subsequent status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
+Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Feed) for Twitter tweets and GitHub events. Stream the latest 10 and all subsequent status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
 
 
 ~~~ scala
