@@ -8,7 +8,7 @@ import akka.stream.{Graph, Materializer, SourceShape}
 import ch.becompany.util.PriorityBuffer
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 /**
   * Streams social network events.
@@ -25,7 +25,10 @@ class Feed[Tag](feeds: Map[Tag, SocialFeed], num: Int)
 
   private lazy val latest: Source[StatusUpdate[Tag], NotUsed] = {
     val taggedFeeds = feeds.map { case (tag, feed) =>
-      feed.latest(num).map(_.map(toStatusUpdate(tag)))
+      feed.
+        latest(num).
+        map(_.map(toStatusUpdate(tag))).
+        recover { case e => List((tag, Instant.now, Failure(e))) }
     }
     val f = Future.
         sequence(taggedFeeds).
@@ -33,6 +36,7 @@ class Feed[Tag](feeds: Map[Tag, SocialFeed], num: Int)
           toList.
           sortBy(_._2).
           takeRight(num))
+
     Source.
       fromFuture(f).
       flatMapConcat(list => Source.fromIterator(() => list.iterator))
