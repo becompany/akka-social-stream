@@ -19,7 +19,7 @@ import scala.util.{Failure, Success, Try}
 class GithubFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
 
   private val system = ActorSystem()
-  private val updateInterval = 1 minute
+  private val updateInterval = 5 minutes
 
   /**
     * Returns the latest `num` GitHub events.
