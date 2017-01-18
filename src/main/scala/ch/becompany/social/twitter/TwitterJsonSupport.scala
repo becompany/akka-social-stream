@@ -7,6 +7,7 @@ import java.util.Locale
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import ch.becompany.social.{Status, User}
 import spray.json._
+import scalatags.Text.all._
 
 case class UserId(id: String)
 
@@ -34,8 +35,8 @@ trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
             case Seq(JsString(screenName), JsString(name)) =>
               (parseDate(createdAt), Status(
                 author = User(screenName, Option(name)),
-                text = text,
-                link = link(id)))
+                html = a(href := link(id), text))
+              )
             case _ => throw DeserializationException("invalid user JSON")
           }
         case _ => throw DeserializationException("invalid tweet JSON")

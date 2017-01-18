@@ -26,7 +26,7 @@ class TwitterStreamSpec extends FlatSpec with Matchers with Inspectors {
       request(n).
       expectNextN(n)
 
-    forAll(results)(_ should matchPattern { case (_, Success(Status( _, _, _))) => })
+    forAll(results)(_ should matchPattern { case (_, Success(Status( _, _))) => })
   }
 
   "Twitter stream" should "stream tweets by user ID" in {
@@ -38,7 +38,7 @@ class TwitterStreamSpec extends FlatSpec with Matchers with Inspectors {
       request(n).
       expectNextN(n)
 
-    forAll(results)(_ should matchPattern { case (_, Success(Status(_, _, _))) => })
+    forAll(results)(_ should matchPattern { case (_, Success(Status(_, _))) => })
   }
 
 }

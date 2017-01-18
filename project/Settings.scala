@@ -9,6 +9,7 @@ object Settings {
     val kOAuth = "1.1.0"
     val scalaCache = "0.9.3"
     val scalaLogging = "3.5.0"
+    val scalaTags = "0.6.1"
   }
 
   object Dependencies {
@@ -20,6 +21,7 @@ object Settings {
     val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
     val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % Versions.scalaLogging
+    val scalaTags = "com.lihaoyi" %% "scalatags" % Versions.scalaTags
   }
 
   val dependencies: Seq[ModuleID] = {
@@ -32,7 +34,8 @@ object Settings {
       scalaTest,
       kOAuth,
       scalaCacheCaffeine,
-      scalaLogging
+      scalaLogging,
+      scalaTags
     )
   }
 
