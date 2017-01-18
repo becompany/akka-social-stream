@@ -12,8 +12,7 @@ libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0"
 
 ## Usage
 
-Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Feed) for Twitter tweets and GitHub events. Stream the latest 10 and all subsequent status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
-
+Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Feed) for Twitter tweets and GitHub events, including the latest 10 messages:
 
 ~~~ scala
 val feed = Feed(
@@ -22,8 +21,10 @@ val feed = Feed(
 )(10)
 ~~~
 
+Subscribe to the stream of status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
+
 ~~~ scala
-feed.subscribe.runForeach { case (network, status) =>
+feed.subscribe.runForeach { case (network, date, status) =>
   println(s"Status update on $network by ${status.author.name}")
 }
 ~~~
