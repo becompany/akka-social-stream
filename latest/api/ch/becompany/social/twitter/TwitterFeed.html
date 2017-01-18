@@ -49,7 +49,9 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Streams Twitter tweets. The continuous stream is generated based on the
+<a href="https://dev.twitter.com/streaming/reference/post/statuses/filter" target="_blank">statuses/filter</a> method
+of the Twitter streaming API.</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -88,7 +90,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="ch.becompany.social.twitter.TwitterFeed#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="ch.becompany.social.twitter.TwitterFeed#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(screenName:String)(implicitec:scala.concurrent.ExecutionContext):ch.becompany.social.twitter.TwitterFeed"></a>
       <a id="&lt;init&gt;:TwitterFeed"></a>
       <h4 class="signature">
@@ -104,7 +106,8 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">screenName</dt><dd class="cmt"><p>The screen name of the user, see
+  <a href="https://dev.twitter.com/overview/api/users" target="_blank">Twitter Developer Documentation</a>.</p></dd><dt class="param">ec</dt><dd class="cmt"><p>The execution context.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -313,6 +316,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.becompany.social.twitter.TwitterFeed#latest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="latest(num:Int):scala.concurrent.Future[List[(java.time.Instant,ch.becompany.social.Status)]]"></a>
+      <a id="latest(Int):Future[List[(Instant,Status)]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">latest</span><span class="params">(<span name="num">num: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[(<span class="extype" name="java.time.Instant">Instant</span>, <a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>)]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ch.becompany.social.twitter.TwitterFeed@latest(num:Int):scala.concurrent.Future[List[(java.time.Instant,ch.becompany.social.Status)]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the latest <code>num</code> Twitter tweets.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the latest <code>num</code> Twitter tweets.</p></div><dl class="paramcmts block"><dt class="param">num</dt><dd class="cmt"><p>The number of tweets to emit.</p></dd><dt>returns</dt><dd class="cmt"><p>A future list of tweets.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.twitter.TwitterFeed">TwitterFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -364,23 +384,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="ch.becompany.social.twitter.TwitterFeed#source" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="source(numLast:Int):akka.stream.scaladsl.Source[scala.util.Try[ch.becompany.social.Status],_]"></a>
-      <a id="source(Int):Source[Try[Status],_]"></a>
+    </li><li name="ch.becompany.social.twitter.TwitterFeed#stream" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stream():akka.stream.scaladsl.Source[(java.time.Instant,scala.util.Try[ch.becompany.social.Status]),_]"></a>
+      <a id="stream():Source[(Instant,Try[Status]),_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">source</span><span class="params">(<span name="numLast">numLast: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>], _]</span>
+        <span class="name">stream</span><span class="params">()</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[(<span class="extype" name="java.time.Instant">Instant</span>, <span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>]), _]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#ch.becompany.social.twitter.TwitterFeed@source(numLast:Int):akka.stream.scaladsl.Source[scala.util.Try[ch.becompany.social.Status],_]" title="Permalink" target="_top">
+      <a href="../../../../index.html#ch.becompany.social.twitter.TwitterFeed@stream():akka.stream.scaladsl.Source[(java.time.Instant,scala.util.Try[ch.becompany.social.Status]),_]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.twitter.TwitterFeed">TwitterFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
+      <p class="shortcomment cmt">Streams Twitter tweets.</p><div class="fullcomment"><div class="comment cmt"><p>Streams Twitter tweets.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>The source providing the stream.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.twitter.TwitterFeed">TwitterFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>

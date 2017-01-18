@@ -49,7 +49,7 @@
       </span>
       </h4>
       
-          <div id="comment" class="fullcommenttop"><div class="toggleContainer block">
+          <div id="comment" class="fullcommenttop"><div class="comment cmt"><p>Streams GitHub events for an organization.</p></div><div class="toggleContainer block">
           <span class="toggle">Linear Supertypes</span>
           <div class="superTypes hiddenContent"><a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a>, <span class="extype" name="scala.AnyRef">AnyRef</span>, <span class="extype" name="scala.Any">Any</span></div>
         </div></div>
@@ -88,7 +88,7 @@
         <div id="allMembers">
         <div id="constructors" class="members">
               <h3>Instance Constructors</h3>
-              <ol><li name="ch.becompany.social.github.GithubFeed#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
+              <ol><li name="ch.becompany.social.github.GithubFeed#&lt;init&gt;" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="&lt;init&gt;(org:String)(implicitec:scala.concurrent.ExecutionContext):ch.becompany.social.github.GithubFeed"></a>
       <a id="&lt;init&gt;:GithubFeed"></a>
       <h4 class="signature">
@@ -104,7 +104,7 @@
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      
+      <p class="shortcomment cmt"></p><div class="fullcomment"><div class="comment cmt"></div><dl class="paramcmts block"><dt class="param">org</dt><dd class="cmt"><p>The name of the organization.</p></dd><dt class="param">ec</dt><dd class="cmt"><p>The execution context.</p></dd></dl></div>
     </li></ol>
             </div>
 
@@ -239,23 +239,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="ch.becompany.social.github.GithubFeed#events" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="events(numLast:Option[Int],lastUpdate:java.time.Instant):scala.concurrent.Future[List[scala.util.Try[ch.becompany.social.Status]]]"></a>
-      <a id="events(Option[Int],Instant):Future[List[Try[Status]]]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">events</span><span class="params">(<span name="numLast">numLast: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="scala.Int">Int</span>]</span>, <span name="lastUpdate">lastUpdate: <span class="extype" name="java.time.Instant">Instant</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>]]]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../index.html#ch.becompany.social.github.GithubFeed@events(numLast:Option[Int],lastUpdate:java.time.Instant):scala.concurrent.Future[List[scala.util.Try[ch.becompany.social.Status]]]" title="Permalink" target="_top">
-        <img src="../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#finalize" visbl="prt" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="finalize():Unit"></a>
       <a id="finalize():Unit"></a>
@@ -296,23 +279,6 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef → Any</dd></dl></div>
-    </li><li name="ch.becompany.social.github.GithubFeed#getLastUpdate" visbl="pub" data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="getLastUpdate(statuses:List[scala.util.Try[ch.becompany.social.Status]]):Option[java.time.Instant]"></a>
-      <a id="getLastUpdate(List[Try[Status]]):Option[Instant]"></a>
-      <h4 class="signature">
-      <span class="modifier_kind">
-        <span class="modifier"></span>
-        <span class="kind">def</span>
-      </span>
-      <span class="symbol">
-        <span class="name">getLastUpdate</span><span class="params">(<span name="statuses">statuses: <span class="extype" name="scala.List">List</span>[<span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>]]</span>)</span><span class="result">: <span class="extype" name="scala.Option">Option</span>[<span class="extype" name="java.time.Instant">Instant</span>]</span>
-      </span>
-      </h4><span class="permalink">
-      <a href="../../../../index.html#ch.becompany.social.github.GithubFeed@getLastUpdate(statuses:List[scala.util.Try[ch.becompany.social.Status]]):Option[java.time.Instant]" title="Permalink" target="_top">
-        <img src="../../../../lib/permalink.png" alt="Permalink" />
-      </a>
-    </span>
-      
     </li><li name="scala.AnyRef#hashCode" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="hashCode():Int"></a>
       <a id="hashCode():Int"></a>
@@ -347,6 +313,23 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>Any</dd></dl></div>
+    </li><li name="ch.becompany.social.github.GithubFeed#latest" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="latest(num:Int):scala.concurrent.Future[List[(java.time.Instant,ch.becompany.social.Status)]]"></a>
+      <a id="latest(Int):Future[List[(Instant,Status)]]"></a>
+      <h4 class="signature">
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">def</span>
+      </span>
+      <span class="symbol">
+        <span class="name">latest</span><span class="params">(<span name="num">num: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="scala.concurrent.Future">Future</span>[<span class="extype" name="scala.List">List</span>[(<span class="extype" name="java.time.Instant">Instant</span>, <a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>)]]</span>
+      </span>
+      </h4><span class="permalink">
+      <a href="../../../../index.html#ch.becompany.social.github.GithubFeed@latest(num:Int):scala.concurrent.Future[List[(java.time.Instant,ch.becompany.social.Status)]]" title="Permalink" target="_top">
+        <img src="../../../../lib/permalink.png" alt="Permalink" />
+      </a>
+    </span>
+      <p class="shortcomment cmt">Returns the latest <code>num</code> GitHub events.</p><div class="fullcomment"><div class="comment cmt"><p>Returns the latest <code>num</code> GitHub events.</p></div><dl class="paramcmts block"><dt class="param">num</dt><dd class="cmt"><p>The number of events to emit.</p></dd><dt>returns</dt><dd class="cmt"><p>A future list of events.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.github.GithubFeed">GithubFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
     </li><li name="scala.AnyRef#ne" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="ne(x$1:AnyRef):Boolean"></a>
       <a id="ne(AnyRef):Boolean"></a>
@@ -398,23 +381,25 @@
       </a>
     </span>
       <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd>AnyRef</dd></dl></div>
-    </li><li name="ch.becompany.social.github.GithubFeed#source" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
-      <a id="source(numLast:Int):akka.stream.scaladsl.Source[scala.util.Try[ch.becompany.social.Status],_]"></a>
-      <a id="source(Int):Source[Try[Status],_]"></a>
+    </li><li name="ch.becompany.social.github.GithubFeed#stream" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
+      <a id="stream():akka.stream.scaladsl.Source[(java.time.Instant,scala.util.Try[ch.becompany.social.Status]),_]"></a>
+      <a id="stream():Source[(Instant,Try[Status]),_]"></a>
       <h4 class="signature">
       <span class="modifier_kind">
         <span class="modifier"></span>
         <span class="kind">def</span>
       </span>
       <span class="symbol">
-        <span class="name">source</span><span class="params">(<span name="numLast">numLast: <span class="extype" name="scala.Int">Int</span></span>)</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[<span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>], _]</span>
+        <span class="name">stream</span><span class="params">()</span><span class="result">: <span class="extype" name="akka.stream.scaladsl.Source">Source</span>[(<span class="extype" name="java.time.Instant">Instant</span>, <span class="extype" name="scala.util.Try">Try</span>[<a href="../Status.html" class="extype" name="ch.becompany.social.Status">Status</a>]), _]</span>
       </span>
       </h4><span class="permalink">
-      <a href="../../../../index.html#ch.becompany.social.github.GithubFeed@source(numLast:Int):akka.stream.scaladsl.Source[scala.util.Try[ch.becompany.social.Status],_]" title="Permalink" target="_top">
+      <a href="../../../../index.html#ch.becompany.social.github.GithubFeed@stream():akka.stream.scaladsl.Source[(java.time.Instant,scala.util.Try[ch.becompany.social.Status]),_]" title="Permalink" target="_top">
         <img src="../../../../lib/permalink.png" alt="Permalink" />
       </a>
     </span>
-      <div class="fullcomment"><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.github.GithubFeed">GithubFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
+      <p class="shortcomment cmt">Streams GitHub events.</p><div class="fullcomment"><div class="comment cmt"><p>Streams GitHub events. The stream is populated using periodic requests;
+the interval between requests is set in the <code>updateInterval</code> value. The first
+request is emitted after <code>updateInterval</code>.</p></div><dl class="paramcmts block"><dt>returns</dt><dd class="cmt"><p>The source providing the stream.</p></dd></dl><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="" class="extype" name="ch.becompany.social.github.GithubFeed">GithubFeed</a> → <a href="../SocialFeed.html" class="extype" name="ch.becompany.social.SocialFeed">SocialFeed</a></dd></dl></div>
     </li><li name="scala.AnyRef#synchronized" visbl="pub" data-isabs="false" fullComment="yes" group="Ungrouped">
       <a id="synchronized[T0](x$1:=&gt;T0):T0"></a>
       <a id="synchronized[T0](⇒T0):T0"></a>
