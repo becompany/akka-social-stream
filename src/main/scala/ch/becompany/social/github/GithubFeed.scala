@@ -9,7 +9,7 @@ import ch.becompany.social.{SocialFeed, Status}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Try}
 
 /**
   * Streams GitHub events for an organization.

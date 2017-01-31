@@ -25,6 +25,12 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   val extractUser = EJsObject("login" -> EJsString)
   val extractRepo = EJsObject("name" -> EJsString)
 
+  private def userUrl(user: String) =
+    s"https://github.com/$user"
+
+  private def userLink(user: String) =
+    a(href := userUrl(user))(user)
+
   private def refLink(repo: String, ref: String) =
     a(href := s"https://github.com/$repo/tree/$ref")(ref)
 
@@ -182,43 +188,43 @@ trait GithubJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   )
 
   def status(createdAt: String, login: String, html: TypedTag[String]): (Instant, Status) =
-    (Instant.parse(createdAt), Status(User(login), html))
+    (Instant.parse(createdAt), Status(User(login, userUrl(login)), html))
 
   implicit object EventFormat extends ReadOnlyJsonFormat[(Instant, Status)] {
     def read(value: JsValue) = value match {
 
       case CreateBranchEvent(Seq(createdAt: String, login: String, ref: String, repo: String)) =>
-        status(createdAt, login, span(s"$login created branch ", refLink(repo, ref), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" created branch ", refLink(repo, ref), " in repository ", repoLink(repo)))
 
       case CreateRepositoryEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        status(createdAt, login, span(s"$login created repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" created repository ", repoLink(repo)))
 
       case CreateTagEvent(Seq(createdAt: String, login: String, ref: String, repo: String)) =>
-        status(createdAt, login, span(s"$login created tag ", refLink(repo, ref), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" created tag ", refLink(repo, ref), " in repository ", repoLink(repo)))
 
       case DeleteBranchEvent(Seq(createdAt: String, login: String, branch, repo: String)) =>
-        status(createdAt, login, span(s"$login deleted branch $branch in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" deleted branch $branch in repository ", repoLink(repo)))
 
       case ForkEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        status(createdAt, login, span(s"$login forked repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" forked repository ", repoLink(repo)))
 
       case IssueCommentEvent(Seq(createdAt: String, login: String, issue: BigDecimal, repo: String)) =>
-        status(createdAt, login, span(s"$login commented on issue ", issueLink(repo, issue), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" commented on issue ", issueLink(repo, issue), " in repository ", repoLink(repo)))
 
       case IssuesEvent(Seq(createdAt: String, login: String, action: String, issue: BigDecimal, repo: String)) =>
-        status(createdAt, login, span(s"$login $action issue ", issueLink(repo, issue), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" $action issue ", issueLink(repo, issue), " in repository ", repoLink(repo)))
 
       case MemberEvent(Seq(createdAt: String, member: String, action: String, repo: String)) =>
-        status(createdAt, member, span(s"Member $member $action to repository ", repoLink(repo)))
+        status(createdAt, member, span(userLink(member), s" $action to repository ", repoLink(repo)))
 
       case PullRequestEvent(Seq(createdAt: String, login: String, action: String, number: BigDecimal, repo: String)) =>
-        status(createdAt, login, span(s"$login $action pull request ", pullRequestLink(repo, number), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" $action pull request ", pullRequestLink(repo, number), " in repository ", repoLink(repo)))
 
       case PushEvent(Seq(createdAt: String, login: String, size, ref: String, repo: String)) =>
-        status(createdAt, login, span(s"$login pushed $size commit(s) to ", refLink(repo, ref), " in repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" pushed $size commit(s) to ", refLink(repo, ref), " in repository ", repoLink(repo)))
 
       case WatchEvent(Seq(createdAt: String, login: String, repo: String)) =>
-        status(createdAt, login, span(s"$login starred repository ", repoLink(repo)))
+        status(createdAt, login, span(userLink(login), s" starred repository ", repoLink(repo)))
 
       case GenericRepoEvent(Seq(eventType: String, createdAt: String, repo: String)) =>
         status(createdAt, "unknown" , span(s"$eventType in repository ", repoLink(repo)))

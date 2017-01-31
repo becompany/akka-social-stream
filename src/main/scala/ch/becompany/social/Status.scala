@@ -1,7 +1,7 @@
 package ch.becompany.social
 
-import scalatags.Text.TypedTag
+import scalatags.Text.Frag
 
-case class User(username: String, name: Option[String] = None)
+case class User(username: String, url: String, name: Option[String] = None)
 
-case class Status(author: User, html: TypedTag[String])
+case class Status(author: User, html: Frag)

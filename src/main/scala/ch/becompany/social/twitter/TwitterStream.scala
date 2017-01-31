@@ -4,7 +4,9 @@ import java.io.IOException
 import java.time.Instant
 
 import akka.http.scaladsl.model._
-import akka.stream.scaladsl.{Framing, Source}
+import akka.pattern.after
+import akka.stream.{ActorAttributes, Supervision}
+import akka.stream.scaladsl.{Flow, Framing, Source}
 import akka.util.ByteString
 import ch.becompany.http.{HttpClient, HttpHandler}
 import ch.becompany.social.Status
@@ -15,15 +17,26 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
-class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
+class TwitterStream(filter: Map[String, String], url: String)
+                   (implicit ec: ExecutionContext)
   extends HttpClient
     with TwitterOAuthSupport
     with TwitterJsonSupport
     with LazyLogging {
 
-  private val url = "https://stream.twitter.com/1.1/statuses/filter.json"
+  import ActorAttributes._
 
   private val source = Uri(url)
+
+  private val resumingDecider: Supervision.Decider = {
+    case e: Exception =>
+      logger.info(s"Encountered ${e.getClass}, resuming stream")
+      Supervision.Resume
+    case _ =>
+      Supervision.Stop
+  }
+
+  private val restartInterval = 5 seconds
 
   private def httpRequest(): HttpRequest = HttpRequest(
     method = HttpMethods.POST,
@@ -32,7 +45,7 @@ class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
     entity = FormData(filter).toEntity
   )
 
-  private def httpSuccessSource(response: HttpResponse): Future[Source[(Instant, Try[Status]), Any]] =
+  private def streamResponse(response: HttpResponse): Future[Source[(Instant, Try[Status]), Any]] =
     Future(response.entity.dataBytes.
       via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true)).
       map(_.utf8String).
@@ -43,37 +56,43 @@ class TwitterStream(filter: Map[String, String])(implicit ec: ExecutionContext)
       }
     )
 
-  private def httpErrorSource(response: HttpResponse): Future[Source[(Instant, Try[Status]), Any]] =
+  private def message(response: HttpResponse): Future[String] =
     response.entity.toStrict(5 seconds).
       map(_.data.utf8String).
-      map { msg =>
-        logger.error(s"Response ${response.status}: $msg")
-        Source.single(Instant.now -> Failure(new IOException(msg)))
-      }
+      map(msg => s"Response ${response.status}: $msg")
 
-  implicit object handler extends HttpHandler[Source[(Instant, Try[Status]), Any]] {
+  private implicit object handler extends HttpHandler[Source[(Instant, Try[Status]), Any]] {
     override def handle(request: HttpRequest, response: HttpResponse)
                        (implicit ec: ExecutionContext): Future[Source[(Instant, Try[Status]), Any]] =
       response.status match {
-        case StatusCodes.OK => httpSuccessSource(response)
-        case _ => httpErrorSource(response)
+        case StatusCodes.OK => streamResponse(response)
+        case _ => message(response).flatMap(msg => Future.failed(new IOException(msg)))
       }
   }
 
   def stream: Source[(Instant, Try[Status]), Any] = {
     logger.debug(s"Streaming tweets with filter $filter")
-    // Emit error instead of failing the complete stream
-    val futureSrc = req(httpRequest()).recover {
-      case e => Source.single(Instant.now -> Failure(e))
-    }
-    Source.fromFuture(futureSrc).flatMapConcat(identity)
+    Source.
+      repeat().
+      via(
+        Flow[Unit].
+          mapAsync(1) { _ =>
+            after(restartInterval, using = system.scheduler) {
+              req(httpRequest())
+            }
+          }.
+          withAttributes(supervisionStrategy(resumingDecider))
+      ).
+      flatMapConcat(identity)
   }
 
 }
 
 object TwitterStream {
 
+  private val streamUrl = "https://stream.twitter.com/1.1/statuses/filter.json"
+
   def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
-    new TwitterStream(filter.toMap)
+    new TwitterStream(filter.toMap, streamUrl)
 
 }

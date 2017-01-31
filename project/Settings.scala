@@ -3,13 +3,15 @@ import sbt._
 object Settings {
 
   object Versions {
-    val akka = "2.4.12"
+    val akka = "2.4.16"
     val scalaTest = "3.0.0"
     val akkaHttp = "10.0.0"
     val kOAuth = "1.1.0"
     val scalaCache = "0.9.3"
     val scalaLogging = "3.5.0"
     val scalaTags = "0.6.1"
+    val logback = "1.1.9"
+    val twitterText = "1.6.1"
   }
 
   object Dependencies {
@@ -22,6 +24,8 @@ object Settings {
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
     val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % Versions.scalaLogging
     val scalaTags = "com.lihaoyi" %% "scalatags" % Versions.scalaTags
+    val logback = "ch.qos.logback" % "logback-classic" % Versions.logback
+    val twitterText = "com.twitter" % "twitter-text" % Versions.twitterText
   }
 
   val dependencies: Seq[ModuleID] = {
@@ -35,7 +39,9 @@ object Settings {
       kOAuth,
       scalaCacheCaffeine,
       scalaLogging,
-      scalaTags
+      scalaTags,
+      logback,
+      twitterText
     )
   }
 

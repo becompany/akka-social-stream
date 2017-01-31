@@ -2,13 +2,14 @@ package ch.becompany.social.twitter
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.LazyLogging
 import org.scalatest.{FlatSpec, Inspectors, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class TwitterClientSpec extends FlatSpec with Matchers with Inspectors {
+class TwitterClientSpec extends FlatSpec with Matchers with Inspectors with LazyLogging {
 
   implicit val system = ActorSystem("twitter-client-spec")
   implicit val materializer = ActorMaterializer()
@@ -20,7 +21,7 @@ class TwitterClientSpec extends FlatSpec with Matchers with Inspectors {
   "Twitter client" should "stream tweets" in {
 
     val f = client.latest(5)
-    f map(_.mkString("\n")) foreach println
+    f.map(_.mkString("\n")).foreach(e => logger.info(e))
     val result = Await.result(f, 10 seconds)
     result.size shouldBe 5
     forAll(result)(_._2.author.username shouldBe screenName)

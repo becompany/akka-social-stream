@@ -6,7 +6,9 @@ import java.util.Locale
 
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport
 import ch.becompany.social.{Status, User}
+import com.twitter.Autolink
 import spray.json._
+
 import scalatags.Text.all._
 
 case class UserId(id: String)
@@ -22,8 +24,16 @@ trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     private def parseDate(s: String): Instant =
       Instant.from(dateParser.parse(s))
 
-    private def link(id: String): String =
+    private def userLink(screenName: String): String =
+      s"https://twitter.com/$screenName"
+
+    private def tweetLink(id: String): String =
       s"https://twitter.com/statuses/$id"
+
+    private val autolink = new Autolink
+
+    private def tweetHtml(text: String): String =
+      autolink.autoLink(text)
 
     override def write(obj: (Instant, Status)): JsValue =
       throw new SerializationException("not supported")
@@ -34,8 +44,8 @@ trait TwitterJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
           user.getFields("screen_name", "name") match {
             case Seq(JsString(screenName), JsString(name)) =>
               (parseDate(createdAt), Status(
-                author = User(screenName, Option(name)),
-                html = a(href := link(id), text))
+                author = User(screenName, userLink(screenName), Option(name)),
+                html = raw(tweetHtml(text)))
               )
             case _ => throw DeserializationException("invalid user JSON")
           }
