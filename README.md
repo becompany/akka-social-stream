@@ -7,7 +7,7 @@ Generate a feed of social network status messages as Akka stream.
 Add the dependency to your SBT build file:
 
 ~~~ sbt
-libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.0"
+libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.1"
 ~~~
 
 ## Usage
@@ -16,7 +16,7 @@ Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch
 
 ~~~ scala
 val feed = Feed(
-  "twitter" -> new TwitterFeed(Some("my_screen_name")),
+  "twitter" -> new TwitterFeed("my_screen_name"),
   "github" -> new GithubFeed("my_github_organization")
 )(10)
 ~~~
