@@ -17,7 +17,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Try}
 
-class TwitterStream(filter: Map[String, String], url: String)
+class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval: FiniteDuration = 1 minute)
                    (implicit ec: ExecutionContext)
   extends HttpClient
     with TwitterOAuthSupport
@@ -36,7 +36,9 @@ class TwitterStream(filter: Map[String, String], url: String)
       Supervision.Stop
   }
 
-  private val restartInterval = 5 seconds
+  // Twitter defines a limitation of 15 request per user. Resets every 15 minutes. => 1 req/m
+  private val minUpdateInterval: FiniteDuration = 1 minute
+  private val updateInterval = minUpdateInterval.max(userUpdateInterval)
 
   private def httpRequest(): HttpRequest = HttpRequest(
     method = HttpMethods.POST,
@@ -77,7 +79,7 @@ class TwitterStream(filter: Map[String, String], url: String)
       via(
         Flow[Unit].
           mapAsync(1) { _ =>
-            after(restartInterval, using = system.scheduler) {
+            after(updateInterval, using = system.scheduler) {
               req(httpRequest())
             }
           }.
@@ -94,5 +96,7 @@ object TwitterStream {
 
   def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
     new TwitterStream(filter.toMap, streamUrl)
+  def apply(restartInterval: FiniteDuration, filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
+    new TwitterStream(filter.toMap, streamUrl, restartInterval)
 
 }

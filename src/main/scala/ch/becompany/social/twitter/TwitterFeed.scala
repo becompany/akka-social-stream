@@ -5,6 +5,7 @@ import java.time.Instant
 import akka.stream.scaladsl.Source
 import ch.becompany.social.{SocialFeed, Status}
 
+import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
@@ -16,11 +17,11 @@ import scala.util.Try
   *   [[https://dev.twitter.com/overview/api/users Twitter Developer Documentation]].
   * @param ec The execution context.
   */
-class TwitterFeed(screenName: String)(implicit ec: ExecutionContext)
+class TwitterFeed(screenName: String, userUpdateInterval: FiniteDuration = 1 minute)(implicit ec: ExecutionContext)
   extends SocialFeed {
 
   private lazy val client = new TwitterClient(screenName)
-  private lazy val streamFuture = client.userId.map(id => TwitterStream("follow" -> id))
+  private lazy val streamFuture = client.userId.map(id => TwitterStream(userUpdateInterval, "follow" -> id))
 
   /**
     * Returns the latest `num` Twitter tweets.

@@ -16,10 +16,12 @@ import scala.util.{Failure, Try}
   * @param org The name of the organization.
   * @param ec The execution context.
   */
-class GithubFeed(org: String)(implicit ec: ExecutionContext) extends SocialFeed {
+class GithubFeed(org: String, userUpdateInterval: FiniteDuration = 1 minute)(implicit ec: ExecutionContext) extends SocialFeed {
 
   private val system = ActorSystem()
-  private val updateInterval = 5 minutes
+  // GitHub unauthenticated requests are limited to 60 per hour. => 1 req/m
+  private val updateIntervalMin: FiniteDuration = 1 minute
+  private val updateInterval = updateIntervalMin.max(userUpdateInterval)
 
   /**
     * Returns the latest `num` GitHub events.
