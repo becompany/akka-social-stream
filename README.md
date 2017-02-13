@@ -22,7 +22,7 @@ val feed = Feed(
 )(10)
 ~~~
 
-The parameters are the ID for the feed provider and the **updateInterval** as FiniteDuration. The **updateInterval** parameter is optional and by default the maximum allowed rate per provider is configured. Values that result in a higher update rate than the allowed by the providers are silently ignored.
+The parameters are the ID for the feed provider and the **updateInterval** as [FiniteDuration](http://www.scala-lang.org/api/current/scala/concurrent/duration/FiniteDuration.html). The **updateInterval** parameter is optional and by default the maximum allowed rate per provider is configured. Values that result in a higher update rate than the allowed by the providers are silently ignored.
 
 Subscribe to the stream of status messages (see [`Status`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Status) class for details):
 
