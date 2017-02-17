@@ -3,9 +3,11 @@ import sbt._
 object Settings {
 
   object Versions {
+    val circe = "0.7.0"
     val akka = "2.4.16"
     val scalaTest = "3.0.0"
-    val akkaHttp = "10.0.0"
+    val akkaHttp = "10.0.3"
+    val akkaHttpCirce = s"${akkaHttp}_$circe"
     val kOAuth = "1.1.0"
     val scalaCache = "0.9.3"
     val scalaLogging = "3.5.0"
@@ -19,6 +21,7 @@ object Settings {
     val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka
     val akkaHttp = "com.typesafe.akka" %% "akka-http-core" % Versions.akkaHttp
     val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.akkaHttp
+    val akkaHttpCirce = "io.fcomb" %% "akka-http-circe" % Versions.akkaHttpCirce
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
     val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
@@ -35,6 +38,7 @@ object Settings {
       akkaStreamTestkit,
       akkaHttp,
       akkaHttpSprayJson,
+      akkaHttpCirce,
       scalaTest,
       kOAuth,
       scalaCacheCaffeine,

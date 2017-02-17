@@ -4,6 +4,7 @@ lazy val root = (project in file(".")).
     name := "akka-social-stream",
     version := "0.1.2-SNAPSHOT",
     scalaVersion := "2.11.8",
+    resolvers += Resolver.bintrayRepo("fcomb", "maven"),
     libraryDependencies ++= Settings.dependencies,
 
     // github pages
