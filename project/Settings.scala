@@ -20,7 +20,8 @@ object Settings {
     val akkaHttp = "com.typesafe.akka" %% "akka-http-core" % Versions.akkaHttp
     val akkaHttpSprayJson = "com.typesafe.akka" %% "akka-http-spray-json" % Versions.akkaHttp
     val scalaTest = "org.scalatest" %% "scalatest" % Versions.scalaTest % "test"
-    val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth
+    val kOAuth = "com.hunorkovacs" %% "koauth" % Versions.kOAuth excludeAll(
+      ExclusionRule(organization = "org.specs2"))
     val scalaCacheCaffeine = "com.github.cb372" %% "scalacache-caffeine" % Versions.scalaCache
     val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % Versions.scalaLogging
     val scalaTags = "com.lihaoyi" %% "scalatags" % Versions.scalaTags
