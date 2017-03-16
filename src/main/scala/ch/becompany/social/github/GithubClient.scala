@@ -29,7 +29,7 @@ object GithubClient extends HttpClient
     */
   def events(org: String)(implicit ec: ExecutionContext): Future[List[(Instant, Status)]] = {
     logger.debug(s"Requesting events for organization $org")
-    req[List[(Instant, Status)]](HttpRequest(uri = Uri(s"$baseUrl/orgs/$org/events")))
+    req[List[(Instant, Status)]](HttpRequest(uri = Uri(s"$baseUrl/orgs/$org/events"))).recover { case _ => List.empty}
   }
 
 }

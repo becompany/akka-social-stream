@@ -8,6 +8,7 @@ import ch.becompany.social.Status
 import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
 /**
   * Client for the Twitter REST API.
@@ -41,7 +42,9 @@ class TwitterClient(screenName: String)
       "include_rts" -> true.toString
     )
     val uri = Uri(s"$baseUrl/statuses/user_timeline.json?$query")
-    req[List[(Instant, Status)]](HttpRequest(uri = uri)).map(_.reverse)
+    req[List[(Instant, Status)]](HttpRequest(uri = uri)) recover {
+      case _ => List.empty
+    }  map(_.reverse)
   }
 
   implicit val userIdHandler = new UnmarshallingHttpHandler[UserId]()
@@ -54,7 +57,9 @@ class TwitterClient(screenName: String)
   def userId(implicit ec: ExecutionContext): Future[String] = {
     logger.debug(s"""Requesting user ID for "$screenName"""")
     val query = queryString("screen_name" -> screenName)
-    req[UserId](HttpRequest(uri = Uri(s"$baseUrl/users/show.json?$query"))).map(_.id)
+    req[UserId](HttpRequest(uri = Uri(s"$baseUrl/users/show.json?$query"))) recover {
+      case _ => UserId("")
+    } map(_.id)
   }
 
 }
