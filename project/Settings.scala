@@ -6,7 +6,7 @@ object Settings {
     val akka = "2.4.17"
     val akkaActor = "2.4.17-BECOMPANY"
     val scalaTest = "3.0.0"
-    val akkaHttp = "10.0.3"
+    val akkaHttp = "10.0.4"
     val kOAuth = "1.1.0"
     val scalaCache = "0.9.3"
     val scalaLogging = "3.5.0"
