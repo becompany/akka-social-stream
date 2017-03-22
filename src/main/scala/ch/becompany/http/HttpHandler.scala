@@ -6,6 +6,7 @@ import akka.http.scaladsl.model.StatusCodes.OK
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, ResponseEntity}
 import akka.http.scaladsl.unmarshalling.{Unmarshal, Unmarshaller}
 import akka.stream.ActorMaterializer
+import com.typesafe.scalalogging.LazyLogging
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -14,7 +15,7 @@ trait HttpHandler[A] {
 }
 
 class UnmarshallingHttpHandler[A](implicit materializer: ActorMaterializer, unmarshaller: Unmarshaller[ResponseEntity, A])
-  extends HttpHandler[A] {
+  extends HttpHandler[A] with LazyLogging{
 
   def handle(request: HttpRequest, response: HttpResponse)(implicit ec: ExecutionContext): Future[A] =
     response.status match {
@@ -25,6 +26,7 @@ class UnmarshallingHttpHandler[A](implicit materializer: ActorMaterializer, unma
   def handleError(response: HttpResponse)(implicit ec: ExecutionContext): Future[A] = {
     Unmarshal(response.entity).to[String].flatMap { entity =>
       val error = s"HTTP error ${response.status}: $entity"
+      logger.error(error)
       Future.failed(new IOException(error))
     }
   }

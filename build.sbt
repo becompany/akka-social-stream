@@ -2,7 +2,7 @@ lazy val root = (project in file(".")).
   settings(
     organization := "ch.becompany",
     name := "akka-social-stream",
-    version := "0.1.2-SNAPSHOT",
+    version := "0.1.4-SNAPSHOT",
     scalaVersion := "2.11.8",
     resolvers += Resolver.bintrayRepo("fcomb", "maven"),
     libraryDependencies ++= Settings.dependencies,

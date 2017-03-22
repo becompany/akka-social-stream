@@ -12,13 +12,14 @@ libraryDependencies += "ch.becompany" %% "akka-social-stream" % "0.1.1"
 
 ## Usage
 
-Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Feed) for Twitter tweets and GitHub events, including the latest 10 messages:
+Declare a [`Feed`](https://becompany.github.io/akka-social-stream/latest/api/#ch.becompany.social.Feed) for Twitter tweets, GitHub events and Facebook page events, including the latest 10 messages:
 
 ~~~ scala
 val updateInterval = 5 minutes
 val feed = Feed(
   "twitter" -> new TwitterFeed("my_screen_name", updateInterval),
   "github" -> new GithubFeed("my_github_organization", updateInterval)
+  "facebook" -> new FacebookFeed("my_facebook_page_id", updateInterval)
 )(10)
 ~~~
 
