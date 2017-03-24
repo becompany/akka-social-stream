@@ -12,7 +12,6 @@ class FacebookFeed(pageId: String, userUpdateInterval: FiniteDuration = 1 minute
   extends PollingSocialFeed
 {
 
-  // GitHub unauthenticated requests are limited to 60 per hour. => 1 req/m
   private val updateIntervalMin: FiniteDuration = 1 minute
   override val updateInterval = updateIntervalMin.max(userUpdateInterval)
 
