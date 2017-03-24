@@ -15,7 +15,7 @@ import spray.json._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Try}
+import scala.util.Try
 
 class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval: FiniteDuration = 1 minute)
                    (implicit ec: ExecutionContext)
@@ -80,7 +80,9 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
         Flow[Unit].
           mapAsync(1) { _ =>
             after(updateInterval, using = system.scheduler) {
-              req(httpRequest())
+              req(httpRequest()) recover {
+                case e => logger.error("Error requesting the Twitter stream.  ", e); Source.empty
+              }
             }
           }.
           withAttributes(supervisionStrategy(resumingDecider))
