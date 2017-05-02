@@ -3,8 +3,7 @@ import sbt._
 object Settings {
 
   object Versions {
-    val akka = "2.4.17"
-    val akkaActor = "2.4.17-BECOMPANY"
+    val akka = "2.4.18"
     val scalaTest = "3.0.0"
     val akkaHttp = "10.0.4"
     val kOAuth = "1.1.0"
@@ -16,7 +15,6 @@ object Settings {
   }
 
   object Dependencies {
-    val akkaActor = "com.typesafe.akka" %% "akka-actor" % Versions.akkaActor
     val akkaStream = "com.typesafe.akka" %% "akka-stream" % Versions.akka
     val akkaStreamTestkit = "com.typesafe.akka" %% "akka-stream-testkit" % Versions.akka
     val akkaHttp = "com.typesafe.akka" %% "akka-http-core" % Versions.akkaHttp
@@ -34,7 +32,6 @@ object Settings {
   val dependencies: Seq[ModuleID] = {
     import Dependencies._
     Seq(
-      akkaActor,
       akkaStream,
       akkaStreamTestkit,
       akkaHttp,
