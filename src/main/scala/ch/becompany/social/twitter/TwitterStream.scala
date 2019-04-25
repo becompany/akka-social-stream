@@ -47,8 +47,8 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
     entity = FormData(filter).toEntity
   )
 
-  private def streamResponse(response: HttpResponse): Future[Source[(Instant, Try[Status]), Any]] =
-    Future(response.entity.dataBytes
+  private def streamResponse(response: HttpResponse): Source[(Instant, Try[Status]), Any] =
+    response.entity.dataBytes
       .via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true))
       .map(_.utf8String)
       .filter(_.length > 0)
@@ -56,25 +56,24 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
         val (date, status) = TweetJsonFormat.read(json.parseJson)
         (date, Try(status))
       }
-    )
 
   private def message(response: HttpResponse): Future[String] =
-    response.entity.toStrict(5 seconds).
-      map(_.data.utf8String).
-      map(msg => s"Response ${response.status}: $msg")
+    response.entity.toStrict(5 seconds)
+      .map(_.data.utf8String)
+      .map(msg => s"Response ${response.status}: $msg")
 
   private object handler extends HttpHandler[Source[(Instant, Try[Status]), Any]] {
     override def handle(request: HttpRequest, response: HttpResponse)
                        (implicit ec: ExecutionContext): Future[Source[(Instant, Try[Status]), Any]] =
       response.status match {
-        case StatusCodes.OK => streamResponse(response)
+        case StatusCodes.OK => Future.successful(streamResponse(response))
         case _ => message(response).flatMap(msg => Future.failed(new IOException(msg)))
       }
   }
 
   private lazy val sendRequest =
     req(httpRequest)(handler, ec) recover {
-      case e => logger.error("Error requesting the Twitter stream. ", e); Source.empty
+      case e => logger.error("Error requesting the Twitter stream: ", e); Source.empty
     }
 
   lazy val stream: Source[(Instant, Try[Status]), Any] = {
