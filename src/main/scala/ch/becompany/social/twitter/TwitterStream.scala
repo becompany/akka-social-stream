@@ -26,9 +26,9 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
 
   import ActorAttributes._
 
-  private val source = Uri(url)
+  private lazy val source = Uri(url)
 
-  private val resumingDecider: Supervision.Decider = {
+  private lazy val resumingDecider: Supervision.Decider = {
     case e: Exception =>
       logger.info(s"Encountered ${e.getClass}, resuming stream")
       Supervision.Resume
@@ -40,7 +40,7 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
   private val minUpdateInterval: FiniteDuration = 1 minute
   private val updateInterval = minUpdateInterval.max(userUpdateInterval)
 
-  private def httpRequest(): HttpRequest = HttpRequest(
+  private lazy val httpRequest: HttpRequest = HttpRequest(
     method = HttpMethods.POST,
     uri = source,
     headers = List(headers.Accept(MediaRanges.`*/*`)),
@@ -48,11 +48,11 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
   )
 
   private def streamResponse(response: HttpResponse): Future[Source[(Instant, Try[Status]), Any]] =
-    Future(response.entity.dataBytes.
-      via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true)).
-      map(_.utf8String).
-      filter(_.length > 0).
-      map { json =>
+    Future(response.entity.dataBytes
+      .via(Framing.delimiter(ByteString("\r\n"), maximumFrameLength = Int.MaxValue, allowTruncation = true))
+      .map(_.utf8String)
+      .filter(_.length > 0)
+      .map { json =>
         val (date, status) = TweetJsonFormat.read(json.parseJson)
         (date, Try(status))
       }
@@ -63,7 +63,7 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
       map(_.data.utf8String).
       map(msg => s"Response ${response.status}: $msg")
 
-  private implicit object handler extends HttpHandler[Source[(Instant, Try[Status]), Any]] {
+  private object handler extends HttpHandler[Source[(Instant, Try[Status]), Any]] {
     override def handle(request: HttpRequest, response: HttpResponse)
                        (implicit ec: ExecutionContext): Future[Source[(Instant, Try[Status]), Any]] =
       response.status match {
@@ -72,22 +72,23 @@ class TwitterStream(filter: Map[String, String], url: String, userUpdateInterval
       }
   }
 
-  def stream: Source[(Instant, Try[Status]), Any] = {
+  private lazy val sendRequest =
+    req(httpRequest)(handler, ec) recover {
+      case e => logger.error("Error requesting the Twitter stream. ", e); Source.empty
+    }
+
+  lazy val stream: Source[(Instant, Try[Status]), Any] = {
     logger.debug(s"Streaming tweets with filter $filter")
-    Source.
-      repeat().
-      via(
-        Flow[Unit].
-          mapAsync(1) { _ =>
-            after(updateInterval, using = system.scheduler) {
-              req(httpRequest()) recover {
-                case e => logger.error("Error requesting the Twitter stream.  ", e); Source.empty
-              }
-            }
-          }.
-          withAttributes(supervisionStrategy(resumingDecider))
-      ).
-      flatMapConcat(identity)
+    Source
+      .unfold(true)(previous => Some((false, previous)))
+      .via(
+        Flow[Boolean]
+          .mapAsync(1)(first =>
+            if (first) sendRequest else after(updateInterval, using = system.scheduler)(sendRequest)
+          )
+          .withAttributes(supervisionStrategy(resumingDecider))
+      )
+      .flatMapConcat(identity)
   }
 
 }
@@ -98,6 +99,7 @@ object TwitterStream {
 
   def apply(filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
     new TwitterStream(filter.toMap, streamUrl)
+
   def apply(restartInterval: FiniteDuration, filter: (String, String)*)(implicit ec: ExecutionContext): TwitterStream =
     new TwitterStream(filter.toMap, streamUrl, restartInterval)
 

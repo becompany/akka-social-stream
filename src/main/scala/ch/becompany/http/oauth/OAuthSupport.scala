@@ -15,18 +15,14 @@ trait OAuthSupport extends HttpClient {
 
   val oauthConfig: OAuthConfig
 
-  private lazy val consumer = new DefaultConsumerService(system.dispatcher)
-
   def oauthHeader(req: HttpRequest)(implicit ex: ExecutionContext): Future[HttpHeader] =
-    for {
-      body: Option[String] <-
-        if (req.entity.isKnownEmpty()) Future(None)
-        else Unmarshal(req.entity).to[String].map(Some(_))
-      header <- oauthHeader(req, body)
-    } yield header
+    (
+      if (req.entity.isKnownEmpty()) Future(None)
+      else Unmarshal(req.entity).to[String].map(Some(_))
+    ).map(body => oauthHeader(req, body))
 
-  def oauthHeader(request: HttpRequest, body: Option[String])(implicit ex: ExecutionContext): Future[HttpHeader] =
-    consumer.createOauthenticatedRequest(
+  def oauthHeader(request: HttpRequest, body: Option[String])(implicit ex: ExecutionContext): HttpHeader = {
+    val req = DefaultConsumerService.createOauthenticatedRequest(
       KoauthRequest(
         method = request.method.value,
         url = request.uri.toString,
@@ -37,10 +33,10 @@ trait OAuthSupport extends HttpClient {
       oauthConfig.consumerSecret,
       oauthConfig.accessToken,
       oauthConfig.accessTokenSecret
-    ).
-      map(_.header).
-      map(header => headers.Authorization(GenericHttpCredentials(
-        oauthHeaderName, header.substring(oauthHeaderName.length + 1))))
+    )
+    headers.Authorization(GenericHttpCredentials(
+      oauthHeaderName, req.header.substring(oauthHeaderName.length + 1)))
+  }
 
   abstract override def additionalHeaders(request: HttpRequest)(implicit ec: ExecutionContext): Future[Seq[HttpHeader]] = {
     val headersFuture = super.additionalHeaders(request)

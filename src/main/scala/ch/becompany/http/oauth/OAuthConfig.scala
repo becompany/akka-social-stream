@@ -7,7 +7,7 @@ case class OAuthConfig(consumerKey: String, consumerSecret: String, accessToken:
 object OAuthConfig {
 
   def load(network: String): OAuthConfig = {
-    val conf = ConfigFactory.load.getConfig(s"scalaSocialFeed.$network")
+    val conf = ConfigFactory.load.getConfig(s"akkaSocialStream.$network")
       new OAuthConfig(
       conf.getString("consumerKey"),
       conf.getString("consumerSecret"),

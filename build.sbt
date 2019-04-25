@@ -3,11 +3,10 @@ lazy val root = (project in file(".")).
     organization := "ch.becompany",
     name := "akka-social-stream",
     version := "0.1.5-SNAPSHOT",
-    scalaVersion := "2.11.8",
+    scalaVersion := "2.12.8",
     libraryDependencies ++= Settings.dependencies,
 
     // github pages
-    ghpages.settings,
     git.remoteRepo := "git@github.com:becompany/akka-social-stream.git"
   ).
-  enablePlugins(SiteScaladocPlugin)
+  enablePlugins(SiteScaladocPlugin, GhpagesPlugin)

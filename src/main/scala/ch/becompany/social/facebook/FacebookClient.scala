@@ -13,17 +13,21 @@ import com.typesafe.scalalogging.LazyLogging
 
 object FacebookClient extends HttpClient with FacebookJsonSupport with CachingSupport with LazyLogging {
 
-  private val accessToken = ConfigFactory.load.getConfig("scalaSocialFeed.facebook")
+  private val config = ConfigFactory.load.getConfig("akkaSocialStream.facebook")
 
   private val baseUrl = Uri("https://graph.facebook.com")
-  private val graphVersion = "v2.8"
+  private val graphVersion = "v3.2"
 
   private implicit val handler = new UnmarshallingHttpHandler[List[(Instant, Status)]]()
 
-
   private def getPageFeedUri(pageId: String): Uri = {
-    Uri("/" + graphVersion + "/" + pageId + "/feed").resolvedAgainst(baseUrl).withQuery(Query.apply(
-      "limit" -> s"${accessToken.getNumber("limit")}", "access_token" -> s"${accessToken.getString("appId")}|${accessToken.getString("appSecret")}"))
+    Uri("/" + graphVersion + "/" + pageId + "/feed")
+      .resolvedAgainst(baseUrl)
+      .withQuery(Query.apply(
+        "limit" -> config.getNumber("limit").toString,
+        //"access_token" -> s"${accessToken.getString("appId")}|${accessToken.getString("appSecret")}"))
+        "access_token" -> config.getString("accessToken")
+      ))
   }
 
   def posts(pageId: String)(implicit ec: ExecutionContext): Future[List[(Instant, Status)]] = {

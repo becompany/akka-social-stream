@@ -12,7 +12,7 @@ import scalatags.Text.all._
 
 trait FacebookJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
-  private val config = ConfigFactory.load.getConfig("scalaSocialFeed.facebook.author")
+  private val config = ConfigFactory.load.getConfig("akkaSocialStream.facebook.author")
   private val author = (config.hasPath("name"), config.hasPath("link")) match {
     case (true, true) => User(config.getString("name"), config.getString("link"))
     case _ => User("Unknown", "#")

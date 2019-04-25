@@ -3,14 +3,14 @@ import sbt._
 object Settings {
 
   object Versions {
-    val akka = "2.4.17"
-    val akkaActor = "2.4.17-BECOMPANY"
+    val akka = "2.5.22"
+    val akkaActor = "2.5.22"
     val scalaTest = "3.0.0"
-    val akkaHttp = "10.0.4"
-    val kOAuth = "1.1.0"
+    val akkaHttp = "10.1.8"
+    val kOAuth = "2.0.0"
     val scalaCache = "0.9.3"
     val scalaLogging = "3.5.0"
-    val scalaTags = "0.6.1"
+    val scalaTags = "0.6.8"
     val logback = "1.1.9"
     val twitterText = "1.6.1"
   }
