@@ -16,7 +16,7 @@ object FacebookClient extends HttpClient with FacebookJsonSupport with CachingSu
   private val config = ConfigFactory.load.getConfig("akkaSocialStream.facebook")
 
   private val baseUrl = Uri("https://graph.facebook.com")
-  private val graphVersion = "v3.2"
+  private val graphVersion = "v3.3"
 
   private implicit val handler = new UnmarshallingHttpHandler[List[(Instant, Status)]]()
 
@@ -25,7 +25,6 @@ object FacebookClient extends HttpClient with FacebookJsonSupport with CachingSu
       .resolvedAgainst(baseUrl)
       .withQuery(Query.apply(
         "limit" -> config.getNumber("limit").toString,
-        //"access_token" -> s"${accessToken.getString("appId")}|${accessToken.getString("appSecret")}"))
         "access_token" -> config.getString("accessToken")
       ))
   }
