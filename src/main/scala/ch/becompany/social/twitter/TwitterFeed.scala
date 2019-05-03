@@ -26,7 +26,7 @@ class TwitterFeed(screenName: String, userUpdateInterval: FiniteDuration = 1 min
     * @param num The number of tweets to emit.
     * @return A future list of tweets.
     */
-  override def latest(num: Int): Future[List[(Instant, Status)]] =
+  override def latest(num: Int): Future[Seq[(Instant, Status)]] =
     client.latest(num)
 
 }

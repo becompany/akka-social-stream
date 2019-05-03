@@ -18,7 +18,7 @@ object FacebookClient extends HttpClient with FacebookJsonSupport with CachingSu
   private val baseUrl = Uri("https://graph.facebook.com")
   private val graphVersion = "v3.3"
 
-  private implicit val handler = new UnmarshallingHttpHandler[List[(Instant, Status)]]()
+  private implicit val handler = new UnmarshallingHttpHandler[Seq[(Instant, Status)]]()
 
   private def getPageFeedUri(pageId: String): Uri = {
     Uri("/" + graphVersion + "/" + pageId + "/feed")
@@ -29,12 +29,12 @@ object FacebookClient extends HttpClient with FacebookJsonSupport with CachingSu
       ))
   }
 
-  def posts(pageId: String)(implicit ec: ExecutionContext): Future[List[(Instant, Status)]] = {
+  def posts(pageId: String)(implicit ec: ExecutionContext): Future[Seq[(Instant, Status)]] = {
     logger.debug("Requesting latest updates from Facebook page. [pageId={}]", pageId)
     val header = scala.collection.immutable.Seq(headers.`Accept`(MediaTypes.`application/json`))
-    req[List[(Instant, Status)]](HttpRequest(uri = getPageFeedUri(pageId), headers = header))
+    req[Seq[(Instant, Status)]](HttpRequest(uri = getPageFeedUri(pageId), headers = header))
       .recover {
-        case e => logger.error("Error building the Facebook status.", e); List.empty
+        case e => logger.error("Error building the Facebook status.", e); Seq.empty
       }
   }
 }

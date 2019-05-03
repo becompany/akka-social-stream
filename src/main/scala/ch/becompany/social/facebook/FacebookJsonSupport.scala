@@ -18,8 +18,8 @@ trait FacebookJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
     case _ => User("Unknown", "#")
   }
 
-  implicit object FacebookJsonFormat extends RootJsonReader[List[(Instant, Status)]] {
-    override def read(json: JsValue): List[(Instant, Status)] =
+  implicit object FacebookJsonFormat extends RootJsonReader[Seq[(Instant, Status)]] {
+    override def read(json: JsValue): Seq[(Instant, Status)] =
       json.asJsObject.getFields("data") match {
         case posts: Seq[JsValue] => posts(0) match {
           case JsArray(array) =>
@@ -31,7 +31,7 @@ trait FacebookJsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
                   )
                 case _ => Option.empty
               }
-            }).flatten.toList
+            }).flatten.toSeq
 
           case _ => throw new DeserializationException("Invalid JSON.")
 

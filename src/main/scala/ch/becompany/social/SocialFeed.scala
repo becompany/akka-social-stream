@@ -21,7 +21,7 @@ trait SocialFeed {
     * @param num The number of previous status messages to prepend to the stream.
     * @return A list of status messages.
     */
-  def latest(num: Int): Future[List[(Instant, Status)]]
+  def latest(num: Int): Future[Seq[(Instant, Status)]]
 
   /**
     * Streams future social media status messages.
@@ -46,7 +46,7 @@ trait PollingSocialFeed extends SocialFeed {
     */
   override def stream(): Source[(Instant, Try[Status]), _] =
     Source.
-      unfoldAsync[Instant, List[(Instant, Try[Status])]](Instant.now) { lastUpdate =>
+      unfoldAsync[Instant, Seq[(Instant, Try[Status])]](Instant.now) { lastUpdate =>
       after(updateInterval, using = system.scheduler) {
         events(lastUpdate) map { statuses =>
           Some((getLastUpdate(statuses) getOrElse lastUpdate, statuses))
@@ -55,17 +55,17 @@ trait PollingSocialFeed extends SocialFeed {
     }.
       flatMapConcat(list => Source.fromIterator(() => list.iterator))
 
-  private def getLastUpdate(statuses: List[(Instant, Try[Status])]): Option[Instant] =
+  private def getLastUpdate(statuses: Seq[(Instant, Try[Status])]): Option[Instant] =
     statuses.
       lastOption.
       map(_._1)
 
-  private def events(lastUpdate: Instant): Future[List[(Instant, Try[Status])]] =
+  private def events(lastUpdate: Instant): Future[Seq[(Instant, Try[Status])]] =
     latest(numberOfEventsToFetch).
       map(_.
         filter(_._1.isAfter(lastUpdate)).
         sortBy(_._1).
         map { case (date, status) => (date, Try(status)) }
       ).
-      recover { case e => List(Instant.now -> Failure(e)) }
+      recover { case e => Seq(Instant.now -> Failure(e)) }
 }

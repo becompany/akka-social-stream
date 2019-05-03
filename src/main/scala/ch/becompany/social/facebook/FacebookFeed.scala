@@ -21,6 +21,6 @@ class FacebookFeed(pageId: String, userUpdateInterval: FiniteDuration = 1 minute
     * @param num The number of previous status messages to prepend to the stream.
     * @return A list of status messages.
     */
-  override def latest(num: Int): Future[List[(Instant, Status)]] = FacebookClient.posts(pageId)
+  override def latest(num: Int): Future[Seq[(Instant, Status)]] = FacebookClient.posts(pageId)
 
 }
