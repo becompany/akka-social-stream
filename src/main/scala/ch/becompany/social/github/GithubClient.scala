@@ -19,7 +19,7 @@ object GithubClient extends HttpClient
 
   private val baseUrl = "https://api.github.com"
 
-  private implicit val handler = new UnmarshallingHttpHandler[List[(Instant, Status)]]()
+  private implicit val handler = new UnmarshallingHttpHandler[Seq[(Instant, Status)]]()
 
   /**
     * Requests the latest events for an organization, ordered by date in ascending order.
@@ -27,9 +27,9 @@ object GithubClient extends HttpClient
     * @param ec The execution context.
     * @return A future list of events.
     */
-  def events(org: String)(implicit ec: ExecutionContext): Future[List[(Instant, Status)]] = {
+  def events(org: String)(implicit ec: ExecutionContext): Future[Seq[(Instant, Status)]] = {
     logger.debug(s"Requesting events for organization $org")
-    req[List[(Instant, Status)]](HttpRequest(uri = Uri(s"$baseUrl/orgs/$org/events"))).recover { case _ => List.empty}
+    req[Seq[(Instant, Status)]](HttpRequest(uri = Uri(s"$baseUrl/orgs/$org/events"))).recover { case _ => Seq.empty}
   }
 
 }

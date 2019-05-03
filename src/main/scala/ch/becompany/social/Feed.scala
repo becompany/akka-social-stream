@@ -28,12 +28,12 @@ class Feed[Tag](feeds: Map[Tag, SocialFeed], num: Int)
       feed.
         latest(num).
         map(_.map(toStatusUpdate(tag))).
-        recover { case e => List((tag, Instant.now, Failure(e))) }
+        recover { case e => Seq((tag, Instant.now, Failure(e))) }
     }
     val f = Future.
         sequence(taggedFeeds).
         map(_.flatten.
-          toList.
+          toSeq.
           sortBy(_._2).
           takeRight(num))
 

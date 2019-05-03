@@ -26,7 +26,7 @@ class TwitterClient(screenName: String)
 
   val baseUrl = "https://api.twitter.com/1.1"
 
-  implicit val statusHandler = new UnmarshallingHttpHandler[List[(Instant, Status)]]()
+  implicit val statusHandler = new UnmarshallingHttpHandler[Seq[(Instant, Status)]]()
 
   /**
     * Request the latest `count` tweets of the user, ordered by date in ascending order.
@@ -34,7 +34,7 @@ class TwitterClient(screenName: String)
     * @param ec The execution context.
     * @return A future list of tweets.
     */
-  def latest(count: Int)(implicit ec: ExecutionContext): Future[List[(Instant, Status)]] = {
+  def latest(count: Int)(implicit ec: ExecutionContext): Future[Seq[(Instant, Status)]] = {
     logger.debug(s"""Requesting $count tweets for "$screenName"""")
     val query = queryString(
       "screen_name" -> screenName,
@@ -42,8 +42,8 @@ class TwitterClient(screenName: String)
       "include_rts" -> true.toString
     )
     val uri = Uri(s"$baseUrl/statuses/user_timeline.json?$query")
-    req[List[(Instant, Status)]](HttpRequest(uri = uri)) recover {
-      case _ => List.empty
+    req[Seq[(Instant, Status)]](HttpRequest(uri = uri)) recover {
+      case _ => Seq.empty
     }  map(_.reverse)
   }
 

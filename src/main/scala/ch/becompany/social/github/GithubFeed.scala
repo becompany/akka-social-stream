@@ -25,6 +25,6 @@ class GithubFeed(org: String, userUpdateInterval: FiniteDuration = 1 minute)(imp
     * @param num The number of events to emit.
     * @return A future list of events.
     */
-  override def latest(num: Int): Future[List[(Instant, Status)]] =
+  override def latest(num: Int): Future[Seq[(Instant, Status)]] =
     GithubClient.events(org).map(_.sortBy(_._1).takeRight(num))
 }
